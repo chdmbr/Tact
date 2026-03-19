@@ -10,6 +10,25 @@
     return status === "completed" ? "completed" : "scheduled";
   }
 
+  function normalizeDate(value) {
+    var raw = String(value || "").trim();
+    if (!raw) return "";
+
+    if (/^\d{4}-\d{2}-\d{2}$/.test(raw)) {
+      return raw;
+    }
+
+    var parsed = new Date(raw);
+    if (!isNaN(parsed.getTime())) {
+      var y = parsed.getFullYear();
+      var m = String(parsed.getMonth() + 1).padStart(2, "0");
+      var d = String(parsed.getDate()).padStart(2, "0");
+      return y + "-" + m + "-" + d;
+    }
+
+    return raw;
+  }
+
   function toPublicPosterUrl(value) {
     var raw = String(value || "").trim();
     if (!raw) return "";
@@ -27,7 +46,7 @@
     return {
       slug: String(raw.slug || ""),
       title: String(raw.title || ""),
-      date: String(raw.date || ""),
+      date: normalizeDate(raw.date),
       time: String(raw.time || ""),
       location: String(raw.location || ""),
       teaser: String(raw.teaser || ""),
