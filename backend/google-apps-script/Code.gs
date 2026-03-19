@@ -73,7 +73,7 @@ function doPost(e) {
 
     var existing = findEventRowBySlug(sheetId, sheetName, slug);
     var posterFile = savePoster(rootFolderId, slug, posterObj);
-    var posterUrl = posterFile ? posterFile.getUrl() : String((existing && existing.posterUrl) || "");
+    var posterUrl = posterFile ? buildPublicImageUrl(posterFile) : String((existing && existing.posterUrl) || "");
 
     upsertEventRow(sheetId, sheetName, {
       slug: slug,
@@ -131,7 +131,9 @@ function savePoster(rootFolderId, slug, posterObj) {
   var old = eventFolder.getFilesByName(filename);
   while (old.hasNext()) old.next().setTrashed(true);
 
-  return eventFolder.createFile(blob);
+  var file = eventFolder.createFile(blob);
+  file.setSharing(DriveApp.Access.ANYONE_WITH_LINK, DriveApp.Permission.VIEW);
+  return file;
 }
 
 function upsertEventRow(sheetId, sheetName, rowObj) {
@@ -216,4 +218,8 @@ function jsonOut(obj, statusCode) {
 
 function isValidPin(value) {
   return /^[0-9]{4,}$/.test(String(value || ""));
+}
+
+function buildPublicImageUrl(file) {
+  return "https://drive.google.com/uc?export=view&id=" + file.getId();
 }
