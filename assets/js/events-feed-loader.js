@@ -10,6 +10,19 @@
     return status === "completed" ? "completed" : "scheduled";
   }
 
+  function toPublicPosterUrl(value) {
+    var raw = String(value || "").trim();
+    if (!raw) return "";
+
+    // Convert standard Drive links to direct image links.
+    var match = raw.match(/[?&]id=([^&]+)/i) || raw.match(/\/d\/([^/]+)/i);
+    if (raw.indexOf("drive.google.com") >= 0 && match && match[1]) {
+      return "https://drive.google.com/uc?export=view&id=" + match[1];
+    }
+
+    return raw;
+  }
+
   function normalizeEvent(raw) {
     return {
       slug: String(raw.slug || ""),
@@ -20,7 +33,7 @@
       teaser: String(raw.teaser || ""),
       homepageMatter: String(raw.homepageMatter || ""),
       status: normalizeStatus(raw.status),
-      poster: String(raw.posterUrl || raw.poster || raw.image || "")
+      poster: toPublicPosterUrl(raw.posterUrl || raw.poster || raw.image || "")
     };
   }
 

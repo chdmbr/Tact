@@ -68,3 +68,4 @@ The backend auto-creates columns if empty:
 - The admin page verifies PIN first, then unlocks the form.
 - Google Drive is used automatically through the Google account that owns the Apps Script deployment.
 - You only need to set `DRIVE_ROOT_FOLDER_ID` once; posters are stored inside that Drive folder.
+- After updating `Code.gs`, redeploy Web App so image links are published in web-friendly format.
