@@ -1,0 +1,497 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>tAcT Admin - Event Update</title>
+  <style>
+    :root {
+      --bg: #f5f7f4;
+      --card: #ffffff;
+      --green: #0a7a3a;
+      --muted: #5c6760;
+      --line: rgba(10, 20, 10, 0.1);
+      --radius: 14px;
+      font-family: "Inter", system-ui, -apple-system, "Segoe UI", Roboto, Arial, sans-serif;
+    }
+    * { box-sizing: border-box; }
+    body {
+      margin: 0;
+      background:
+        radial-gradient(700px 300px at 10% 0%, rgba(10, 122, 58, 0.08), transparent 50%),
+        var(--bg);
+      color: #142019;
+      padding: 16px;
+    }
+    .wrap {
+      max-width: 720px;
+      margin: 0 auto;
+      display: grid;
+      gap: 12px;
+    }
+    .card {
+      background: var(--card);
+      border: 1px solid var(--line);
+      border-radius: var(--radius);
+      padding: 14px;
+      box-shadow: 0 12px 34px rgba(10, 20, 10, 0.06);
+    }
+    h1, h2 {
+      margin: 0 0 8px;
+      color: var(--green);
+      letter-spacing: -0.02em;
+    }
+    p {
+      margin: 0 0 8px;
+      color: var(--muted);
+      line-height: 1.45;
+      font-size: 14px;
+    }
+    .hidden { display: none; }
+    .grid {
+      display: grid;
+      gap: 10px;
+    }
+    .row-2 {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 10px;
+    }
+    label {
+      font-size: 13px;
+      font-weight: 600;
+      color: #284536;
+      display: block;
+      margin-bottom: 4px;
+    }
+    input, textarea, select, button {
+      width: 100%;
+      border: 1px solid var(--line);
+      border-radius: 10px;
+      padding: 11px 10px;
+      font: inherit;
+      font-size: 14px;
+      background: #fff;
+    }
+    textarea { min-height: 92px; resize: vertical; }
+    input:focus, textarea:focus, select:focus {
+      outline: 2px solid rgba(10, 122, 58, 0.28);
+      border-color: rgba(10, 122, 58, 0.45);
+    }
+    button {
+      cursor: pointer;
+      background: linear-gradient(180deg, #0a7a3a, #08632f);
+      color: #fff;
+      border: 0;
+      font-weight: 700;
+    }
+    .secondary {
+      background: linear-gradient(180deg, #ffffff, #f5f6f4);
+      color: #20352b;
+      border: 1px solid var(--line);
+      font-weight: 600;
+    }
+    .btn-row {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 10px;
+    }
+    .status {
+      font-size: 13px;
+      margin-top: 8px;
+      color: #365548;
+      background: rgba(10, 122, 58, 0.08);
+      border: 1px solid rgba(10, 122, 58, 0.22);
+      border-radius: 8px;
+      padding: 8px 10px;
+    }
+    .mono { font-family: ui-monospace, SFMono-Regular, Menlo, Consolas, monospace; }
+    .mini { font-size: 12px; color: var(--muted); margin: 0; }
+    .section-title { margin-top: 8px; }
+    @media (max-width: 680px) {
+      .row-2, .btn-row { grid-template-columns: 1fr; }
+    }
+  </style>
+</head>
+<body>
+  <div class="wrap">
+    <section class="card">
+      <h1>tAcT Event Admin</h1>
+      <p>Mobile form for updating events. Fill and submit. No code edits needed.</p>
+    </section>
+
+    <section id="pin-card" class="card">
+      <h2>PIN Access</h2>
+      <p>Enter your admin PIN to unlock the event form.</p>
+      <div class="grid">
+        <div>
+          <label for="pin-input">Admin PIN</label>
+          <input id="pin-input" type="password" inputmode="numeric" autocomplete="one-time-code" placeholder="Enter PIN">
+        </div>
+        <button id="unlock-btn" type="button">Unlock Form</button>
+      </div>
+      <p id="pin-hint" class="status hidden">PIN accepted. Form unlocked.</p>
+
+      <h2 class="section-title">Set / Change PIN</h2>
+      <p class="mini" id="pin-mode-note">Checking PIN status...</p>
+      <div class="grid">
+        <div>
+          <label for="old-pin-input">Current PIN</label>
+          <input id="old-pin-input" type="password" inputmode="numeric" autocomplete="off" placeholder="Current PIN">
+        </div>
+        <div class="row-2">
+          <div>
+            <label for="new-pin-input">New PIN</label>
+            <input id="new-pin-input" type="password" inputmode="numeric" autocomplete="new-password" placeholder="At least 4 digits">
+          </div>
+          <div>
+            <label for="confirm-pin-input">Confirm New PIN</label>
+            <input id="confirm-pin-input" type="password" inputmode="numeric" autocomplete="new-password" placeholder="Repeat new PIN">
+          </div>
+        </div>
+        <button id="change-pin-btn" type="button" class="secondary">Save PIN</button>
+      </div>
+      <p id="pin-change-status" class="status hidden"></p>
+    </section>
+
+    <section id="form-card" class="card hidden">
+      <h2>Add / Update Event</h2>
+      <p>Use this for both upcoming and completed events.</p>
+
+      <form id="admin-form" class="grid">
+        <div>
+          <label for="title">Event Title</label>
+          <input id="title" name="title" required>
+        </div>
+
+        <div class="row-2">
+          <div>
+            <label for="date">Date</label>
+            <input id="date" name="date" type="date" required>
+          </div>
+          <div>
+            <label for="time">Time</label>
+            <input id="time" name="time" placeholder="10:00 AM - 1:00 PM" required>
+          </div>
+        </div>
+
+        <div class="row-2">
+          <div>
+            <label for="location">Location</label>
+            <input id="location" name="location" required>
+          </div>
+          <div>
+            <label for="status">Status</label>
+            <select id="status" name="status">
+              <option value="scheduled">Scheduled</option>
+              <option value="completed">Completed</option>
+            </select>
+          </div>
+        </div>
+
+        <div>
+          <label for="teaser">Short Summary</label>
+          <textarea id="teaser" name="teaser" placeholder="One-line summary"></textarea>
+        </div>
+
+        <div>
+          <label for="homepageMatter">Homepage Text</label>
+          <textarea id="homepageMatter" name="homepageMatter" placeholder="2-3 lines for homepage card"></textarea>
+        </div>
+
+        <div>
+          <label for="poster">Poster Image</label>
+          <input id="poster" name="poster" type="file" accept=".jpg,.jpeg,.png,.webp,.svg" required>
+          <p id="poster-meta" class="mono"></p>
+        </div>
+
+        <div class="btn-row">
+          <button type="submit">Submit Event</button>
+          <button id="clear-btn" type="button" class="secondary">Clear Form</button>
+        </div>
+      </form>
+
+      <div id="submit-status" class="status hidden"></div>
+    </section>
+  </div>
+
+  <script src="assets/js/events-config.js"></script>
+  <script>
+    const ADMIN_CONFIG = {
+      endpoint: String((window.TACT_EVENTS_CONFIG && window.TACT_EVENTS_CONFIG.apiEndpoint) || "").trim()
+    };
+
+    const pinCard = document.getElementById("pin-card");
+    const formCard = document.getElementById("form-card");
+    const pinInput = document.getElementById("pin-input");
+    const pinHint = document.getElementById("pin-hint");
+    const unlockBtn = document.getElementById("unlock-btn");
+    const adminForm = document.getElementById("admin-form");
+    const posterInput = document.getElementById("poster");
+    const posterMeta = document.getElementById("poster-meta");
+    const statusBox = document.getElementById("submit-status");
+    const clearBtn = document.getElementById("clear-btn");
+    const oldPinInput = document.getElementById("old-pin-input");
+    const newPinInput = document.getElementById("new-pin-input");
+    const confirmPinInput = document.getElementById("confirm-pin-input");
+    const changePinBtn = document.getElementById("change-pin-btn");
+    const pinModeNote = document.getElementById("pin-mode-note");
+    const pinChangeStatus = document.getElementById("pin-change-status");
+
+    let unlockedPin = "";
+    let posterPayload = null;
+    let pinConfigured = true;
+
+    bootPinStatus();
+
+    unlockBtn.addEventListener("click", async function () {
+      const pin = (pinInput.value || "").trim();
+      if (pin.length < 4) {
+        alert("Enter valid PIN.");
+        return;
+      }
+      if (!hasConfiguredEndpoint()) {
+        alert("Admin endpoint is not configured yet.");
+        return;
+      }
+
+      unlockBtn.disabled = true;
+      unlockBtn.textContent = "Checking...";
+
+      try {
+        const ok = await verifyPin(pin);
+        if (!ok) {
+          alert(pinConfigured ? "Invalid PIN." : "PIN not set yet. Use Set / Change PIN first.");
+          return;
+        }
+
+        unlockedPin = pin;
+        pinHint.classList.remove("hidden");
+        formCard.classList.remove("hidden");
+        window.scrollTo({ top: document.body.scrollHeight, behavior: "smooth" });
+      } catch (_err) {
+        alert("Could not verify PIN. Please try again.");
+      } finally {
+        unlockBtn.disabled = false;
+        unlockBtn.textContent = "Unlock Form";
+      }
+    });
+
+    changePinBtn.addEventListener("click", async function () {
+      if (!hasConfiguredEndpoint()) {
+        alert("Admin endpoint is not configured yet.");
+        return;
+      }
+
+      const oldPin = (oldPinInput.value || "").trim();
+      const newPin = (newPinInput.value || "").trim();
+      const confirmPin = (confirmPinInput.value || "").trim();
+
+      if (!/^[0-9]{4,}$/.test(newPin)) {
+        alert("New PIN must be at least 4 digits.");
+        return;
+      }
+      if (newPin !== confirmPin) {
+        alert("New PIN and confirmation do not match.");
+        return;
+      }
+      if (pinConfigured && !oldPin) {
+        alert("Enter current PIN to change.");
+        return;
+      }
+
+      changePinBtn.disabled = true;
+      pinChangeStatus.classList.remove("hidden");
+      pinChangeStatus.textContent = "Saving PIN...";
+
+      try {
+        const ok = await changePin(oldPin, newPin);
+        if (!ok) return;
+
+        pinConfigured = true;
+        unlockedPin = newPin;
+        pinInput.value = newPin;
+        pinHint.classList.remove("hidden");
+        formCard.classList.remove("hidden");
+        pinModeNote.textContent = "PIN is set. To change it, enter current PIN and new PIN.";
+        oldPinInput.value = "";
+        newPinInput.value = "";
+        confirmPinInput.value = "";
+        pinChangeStatus.textContent = "PIN saved successfully.";
+      } finally {
+        changePinBtn.disabled = false;
+      }
+    });
+
+    posterInput.addEventListener("change", async function () {
+      const file = posterInput.files && posterInput.files[0];
+      if (!file) {
+        posterPayload = null;
+        posterMeta.textContent = "";
+        return;
+      }
+
+      const base64 = await readFileAsBase64(file);
+      posterPayload = {
+        name: file.name,
+        mime: file.type || "application/octet-stream",
+        data: base64
+      };
+      posterMeta.textContent = "Selected: " + file.name + " (" + Math.round(file.size / 1024) + " KB)";
+    });
+
+    clearBtn.addEventListener("click", function () {
+      adminForm.reset();
+      posterPayload = null;
+      posterMeta.textContent = "";
+      statusBox.classList.add("hidden");
+      statusBox.textContent = "";
+    });
+
+    adminForm.addEventListener("submit", async function (event) {
+      event.preventDefault();
+      if (!unlockedPin) {
+        alert("Unlock with PIN first.");
+        return;
+      }
+      if (!posterPayload) {
+        alert("Please choose a poster image.");
+        return;
+      }
+      if (!hasConfiguredEndpoint()) {
+        alert("Admin endpoint is not configured yet.");
+        return;
+      }
+
+      const title = valueOf("title");
+      const date = valueOf("date");
+      const payload = {
+        pin: unlockedPin,
+        event: {
+          slug: slugify(date + "--" + title),
+          title: title,
+          date: date,
+          time: valueOf("time"),
+          location: valueOf("location"),
+          status: valueOf("status"),
+          teaser: valueOf("teaser"),
+          homepageMatter: valueOf("homepageMatter")
+        },
+        poster: posterPayload
+      };
+
+      try {
+        statusBox.classList.remove("hidden");
+        statusBox.textContent = "Submitting...";
+
+        const response = await fetch(ADMIN_CONFIG.endpoint, {
+          method: "POST",
+          headers: { "Content-Type": "text/plain;charset=utf-8" },
+          body: JSON.stringify(payload)
+        });
+
+        const text = await response.text();
+        let body = {};
+        try {
+          body = JSON.parse(text || "{}");
+        } catch (_err) {
+          body = {};
+        }
+        if (!response.ok) {
+          throw new Error(text || "Submit failed");
+        }
+        if (body && body.ok === false) {
+          throw new Error(body.error || "Submit failed");
+        }
+
+        statusBox.textContent = "Submitted successfully. Event is now in backend.";
+      } catch (err) {
+        statusBox.textContent = "Submit failed: " + (err && err.message ? err.message : "Unknown error");
+      }
+    });
+
+    function valueOf(id) {
+      return (document.getElementById(id).value || "").trim();
+    }
+
+    function slugify(text) {
+      return String(text || "")
+        .toLowerCase()
+        .replace(/[^a-z0-9]+/g, "-")
+        .replace(/^-+|-+$/g, "");
+    }
+
+    function readFileAsBase64(file) {
+      return new Promise((resolve, reject) => {
+        const reader = new FileReader();
+        reader.onload = () => {
+          const value = reader.result || "";
+          const commaIndex = String(value).indexOf(",");
+          resolve(commaIndex >= 0 ? String(value).slice(commaIndex + 1) : String(value));
+        };
+        reader.onerror = reject;
+        reader.readAsDataURL(file);
+      });
+    }
+
+    function hasConfiguredEndpoint() {
+      return !!ADMIN_CONFIG.endpoint;
+    }
+
+    async function verifyPin(pin) {
+      const response = await fetch(ADMIN_CONFIG.endpoint, {
+        method: "POST",
+        headers: { "Content-Type": "text/plain;charset=utf-8" },
+        body: JSON.stringify({ action: "verifyPin", pin: pin })
+      });
+      const body = await response.json();
+      return !!(body && body.ok);
+    }
+
+    async function bootPinStatus() {
+      if (!hasConfiguredEndpoint()) {
+        pinModeNote.textContent = "Configure endpoint first in assets/js/events-config.js";
+        return;
+      }
+
+      try {
+        const response = await fetch(ADMIN_CONFIG.endpoint, {
+          method: "POST",
+          headers: { "Content-Type": "text/plain;charset=utf-8" },
+          body: JSON.stringify({ action: "pinStatus" })
+        });
+        const body = await response.json();
+        pinConfigured = !!(body && body.pinConfigured);
+
+        if (pinConfigured) {
+          pinModeNote.textContent = "PIN is set. To change it, enter current PIN and new PIN.";
+          oldPinInput.disabled = false;
+          oldPinInput.placeholder = "Current PIN";
+          changePinBtn.textContent = "Change PIN";
+        } else {
+          pinModeNote.textContent = "No PIN set yet. Create your first PIN now.";
+          oldPinInput.disabled = true;
+          oldPinInput.placeholder = "Not needed for first-time setup";
+          changePinBtn.textContent = "Set First PIN";
+        }
+      } catch (_err) {
+        pinModeNote.textContent = "Could not check PIN status. Try again after backend deploy.";
+      }
+    }
+
+    async function changePin(oldPin, newPin) {
+      const response = await fetch(ADMIN_CONFIG.endpoint, {
+        method: "POST",
+        headers: { "Content-Type": "text/plain;charset=utf-8" },
+        body: JSON.stringify({ action: "changePin", oldPin: oldPin, newPin: newPin })
+      });
+      const body = await response.json();
+      if (!body || !body.ok) {
+        pinChangeStatus.textContent = body && body.error ? body.error : "Could not save PIN.";
+        return false;
+      }
+      return true;
+    }
+  </script>
+</body>
+</html>

@@ -1,0 +1,48 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Events - The Academy Trust (tAcT)</title>
+  <meta name="description" content="Upcoming and past events by The Academy Trust (tAcT)">
+  <link rel="stylesheet" href="shared-ribbon.css">
+  <link rel="stylesheet" href="assets/css/events.css">
+</head>
+<body>
+  <div class="wrap">
+    <div id="site-header-root"></div>
+
+    <main id="main">
+      <section class="surface">
+        <h1>Events</h1>
+        <p>Upcoming events appear here automatically. Once an event date passes, it moves to the archive scroll below.</p>
+      </section>
+
+      <section id="upcoming" class="surface">
+        <h2>Upcoming Events</h2>
+        <div id="upcoming-list" class="event-grid"></div>
+      </section>
+
+      <section id="archive" class="surface">
+        <h2>Archived Events</h2>
+        <div id="archive-list" class="archive-scroll"></div>
+      </section>
+
+      <section class="surface help-box">
+        <h2>How to Update</h2>
+        <p>Use <code>admin.html</code> on your phone, fill the form, and submit. Events move between Upcoming and Archived automatically by status/date.</p>
+      </section>
+    </main>
+
+    <footer>
+      <p>&copy; <span id="year"></span> The Academy Trust (tAcT). All rights reserved.</p>
+    </footer>
+  </div>
+
+  <script src="assets/js/site-chrome.js"></script>
+  <script src="assets/js/events-config.js"></script>
+  <script src="content/events/events-feed.js"></script>
+  <script src="assets/js/events-feed-loader.js"></script>
+  <script src="assets/js/events-page.js"></script>
+</body>
+</html>
