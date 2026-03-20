@@ -4,25 +4,28 @@
   - Execute as: Me
   - Who has access: Anyone
 
-  Set Script Properties:
-  - ADMIN_PIN = <your pin>
-  - SHEET_ID = <google sheet id>
-  - SHEET_NAME = events
-  - DRIVE_ROOT_FOLDER_ID = <drive folder id for posters>
+  Required Script Properties:
+  - ADMIN_PIN = <admin pin>
+  - GITHUB_TOKEN = <GitHub token with repo contents write access>
+  - GITHUB_OWNER = <repo owner, for example Chdmbr>
+  - GITHUB_REPO = <repo name, for example Tact>
+
+  Optional Script Properties:
+  - GITHUB_BRANCH = main
+  - GITHUB_EVENTS_ROOT = content/events
 */
 
-// One-time bootstrap values provided for initial setup.
-// Run setupScriptPropertiesOnce() from Apps Script editor once, then deploy web app.
 var DEFAULT_SETUP = {
-  SHEET_ID: "1_bF5DizUSOMc3NBhiL3o5ZHHacogra0fnLiLCNg0AhM",
-  SHEET_NAME: "events",
-  DRIVE_ROOT_FOLDER_ID: "1t30TMvENtZTo7catXk8FqyhCB3lRUsLF",
+  GITHUB_OWNER: "Chdmbr",
+  GITHUB_REPO: "Tact",
+  GITHUB_BRANCH: "main",
+  GITHUB_EVENTS_ROOT: "content/events",
   ADMIN_PIN: "1234"
 };
 
 function doPost(e) {
   try {
-    var payload = JSON.parse(e.postData.contents || "{}");
+    var payload = JSON.parse((e && e.postData && e.postData.contents) || "{}");
     var action = String(payload.action || "");
     var pin = String(payload.pin || "");
     var oldPin = String(payload.oldPin || "");
@@ -45,9 +48,8 @@ function doPost(e) {
       if (!isValidPin(newPin)) {
         return jsonOut({ ok: false, error: "New PIN must be at least 4 digits." }, 400);
       }
-
-      if (adminPin) {
-        if (oldPin !== adminPin) return jsonOut({ ok: false, error: "Current PIN is incorrect." }, 401);
+      if (adminPin && oldPin !== adminPin) {
+        return jsonOut({ ok: false, error: "Current PIN is incorrect." }, 401);
       }
 
       props.setProperty("ADMIN_PIN", newPin);
@@ -61,232 +63,343 @@ function doPost(e) {
       return jsonOut({ ok: false, error: "Invalid PIN" }, 401);
     }
 
-    var sheetId = props.getProperty("SHEET_ID");
-    var sheetName = props.getProperty("SHEET_NAME") || "events";
-    var rootFolderId = props.getProperty("DRIVE_ROOT_FOLDER_ID");
-    if (!sheetId || !rootFolderId) {
-      return jsonOut({ ok: false, error: "Missing script properties" }, 500);
-    }
-
-    var slug = String(eventObj.slug || "").trim();
-    if (!slug) return jsonOut({ ok: false, error: "Missing slug" }, 400);
-
-    var existing = findEventRowBySlug(sheetId, sheetName, slug);
-    var posterFile = savePoster(rootFolderId, slug, posterObj);
-    var posterUrl = posterFile ? buildPublicImageUrl(posterFile) : String((existing && existing.posterUrl) || "");
-
-    upsertEventRow(sheetId, sheetName, {
-      slug: slug,
-      title: String(eventObj.title || ""),
-      date: String(eventObj.date || ""),
-      time: String(eventObj.time || ""),
-      location: String(eventObj.location || ""),
-      status: String(eventObj.status || "scheduled"),
-      teaser: String(eventObj.teaser || ""),
-      homepageMatter: String(eventObj.homepageMatter || ""),
-      posterUrl: posterUrl,
-      updatedAt: new Date().toISOString()
-    });
-
-    return jsonOut({ ok: true, slug: slug, posterUrl: posterUrl }, 200);
+    var result = publishEventToGitHub(props, eventObj, posterObj);
+    return jsonOut(result, 200);
   } catch (err) {
-    return jsonOut({ ok: false, error: String(err) }, 500);
+    return jsonOut({ ok: false, error: String(err && err.message ? err.message : err) }, 500);
   }
 }
 
-function setupScriptPropertiesOnce() {
-  var props = PropertiesService.getScriptProperties();
-  props.setProperties({
-    SHEET_ID: DEFAULT_SETUP.SHEET_ID,
-    SHEET_NAME: DEFAULT_SETUP.SHEET_NAME,
-    DRIVE_ROOT_FOLDER_ID: DEFAULT_SETUP.DRIVE_ROOT_FOLDER_ID,
-    ADMIN_PIN: DEFAULT_SETUP.ADMIN_PIN
-  }, true);
+function publishEventToGitHub(props, eventObj, posterObj) {
+  var repo = getRepoConfig(props);
+  var slug = sanitizeSlug(eventObj.slug || buildSlug(eventObj.date, eventObj.title));
+  var title = String(eventObj.title || "").trim();
+  var date = normalizeDate(eventObj.date);
+  var time = String(eventObj.time || "").trim();
+  var location = String(eventObj.location || "").trim();
+  var status = normalizeStatus(eventObj.status);
+  var teaser = String(eventObj.teaser || "").trim();
+  var homepageMatter = String(eventObj.homepageMatter || "").trim();
+
+  if (!slug || !title || !date || !time || !location) {
+    throw new Error("Missing required event fields.");
+  }
+  if (!posterObj || !posterObj.data) {
+    throw new Error("Poster image is required.");
+  }
+
+  var ext = inferPosterExtension(posterObj);
+  var eventDir = joinPath(repo.eventsRoot, slug);
+  var posterPath = joinPath(eventDir, "poster" + ext);
+  var eventPath = joinPath(eventDir, "event.json");
+  var preEventPath = joinPath(eventDir, "pre-event.txt");
+  var postEventPath = joinPath(eventDir, "post-event.md");
+
+  removeOtherPosterVariants(repo, eventDir, "poster" + ext);
+
+  var eventContent = buildEventJson({
+    slug: slug,
+    title: title,
+    date: date,
+    time: time,
+    location: location,
+    teaser: teaser,
+    homepageMatter: homepageMatter,
+    status: status
+  });
+
+  putTextFile(repo, eventPath, eventContent, "Publish event metadata for " + slug);
+  putIfMissing(repo, preEventPath, "Short pre-event note.\n", "Create pre-event note for " + slug);
+  putIfMissing(
+    repo,
+    postEventPath,
+    "# Post Event Notes\n\n- Speakers:\n- Highlights:\n- Attendance:\n- Outcomes:\n",
+    "Create post-event notes for " + slug
+  );
+  putBinaryFile(repo, posterPath, String(posterObj.data || ""), "Publish event poster for " + slug);
+  rebuildFeed(repo);
 
   return {
     ok: true,
-    message: "Script properties saved. Now deploy/redeploy web app and use the /exec URL."
+    slug: slug,
+    posterPath: posterPath,
+    feedPath: joinPath(repo.eventsRoot, "events-feed.js")
   };
 }
 
+function rebuildFeed(repo) {
+  var rootEntries = listDirectory(repo, repo.eventsRoot);
+  var feed = [];
 
-function doGet(e) {
-    var mode = (e && e.parameter && e.parameter.mode) ? e.parameter.mode : "feed";
-    if (mode === "health") return jsonOut({ ok: true, status: "healthy" }, 200);
-    return jsonOut({ ok: true, events: readEvents() }, 200);
-}
+  for (var i = 0; i < rootEntries.length; i++) {
+    var entry = rootEntries[i];
+    if (!entry || entry.type !== "dir" || String(entry.name || "").charAt(0) === "_") continue;
 
+    var dirPath = entry.path;
+    var dirEntries = listDirectory(repo, dirPath);
+    var eventJsonPath = "";
+    var posterPath = "";
+    var fallbackPosterPath = "";
 
-function savePoster(rootFolderId, slug, posterObj) {
-  if (!posterObj || !posterObj.data) return null;
-  var root = DriveApp.getFolderById(rootFolderId);
-  var eventFolder = getOrCreateChild(root, slug);
-
-  var bytes = Utilities.base64Decode(String(posterObj.data));
-  var mime = String(posterObj.mime || "application/octet-stream");
-  var originalName = String(posterObj.name || "poster.bin");
-  var ext = originalName.indexOf(".") >= 0 ? originalName.substring(originalName.lastIndexOf(".")) : "";
-  var filename = "poster" + ext.toLowerCase();
-  var blob = Utilities.newBlob(bytes, mime, filename);
-
-  // Remove previous poster versions with same name for clean replacement
-  var old = eventFolder.getFilesByName(filename);
-  while (old.hasNext()) old.next().setTrashed(true);
-
-  var file = eventFolder.createFile(blob);
-  file.setSharing(DriveApp.Access.ANYONE_WITH_LINK, DriveApp.Permission.VIEW);
-  return file;
-}
-
-function upsertEventRow(sheetId, sheetName, rowObj) {
-  var ss = SpreadsheetApp.openById(sheetId);
-  var sh = ss.getSheetByName(sheetName) || ss.insertSheet(sheetName);
-
-  var headers = ["slug", "title", "date", "time", "location", "status", "teaser", "homepageMatter", "posterUrl", "updatedAt"];
-  if (sh.getLastRow() === 0) sh.appendRow(headers);
-
-  var data = sh.getDataRange().getValues();
-  var slugCol = 1; // A
-  var foundRow = -1;
-  for (var i = 1; i < data.length; i++) {
-    if (String(data[i][slugCol - 1]) === rowObj.slug) {
-      foundRow = i + 1;
-      break;
-    }
-  }
-
-  var values = headers.map(function (h) { return rowObj[h] || ""; });
-  if (foundRow > 0) {
-    sh.getRange(foundRow, 1, 1, headers.length).setValues([values]);
-  } else {
-    sh.appendRow(values);
-  }
-}
-
-function findEventRowBySlug(sheetId, sheetName, slug) {
-  var ss = SpreadsheetApp.openById(sheetId);
-  var sh = ss.getSheetByName(sheetName);
-  if (!sh || sh.getLastRow() < 2) return null;
-
-  var values = sh.getDataRange().getValues();
-  var headers = values[0];
-  var slugIndex = headers.indexOf("slug");
-  if (slugIndex < 0) return null;
-
-  for (var r = 1; r < values.length; r++) {
-    if (String(values[r][slugIndex]) !== slug) continue;
-    var obj = {};
-    for (var c = 0; c < headers.length; c++) obj[headers[c]] = values[r][c];
-    return obj;
-  }
-
-  return null;
-}
-
-function readEvents() {
-    var props = PropertiesService.getScriptProperties();
-    var sheetId = props.getProperty("SHEET_ID");
-    var sheetName = props.getProperty("SHEET_NAME") || "events";
-    if (!sheetId) return [];
-
-    var ss = SpreadsheetApp.openById(sheetId);
-    var sh = ss.getSheetByName(sheetName);
-    if (!sh || sh.getLastRow() < 2) return [];
-
-    var values = sh.getDataRange().getValues();
-    var headers = values[0];
-    var out = [];
-
-    for (var r = 1; r < values.length; r++) {
-      var obj = {};
-      for (var c = 0; c < headers.length; c++) obj[headers[c]] = values[r][c];
-
-      if (obj.posterUrl) {
-        obj.posterUrl = normalizePosterUrl(obj.posterUrl);
+    for (var j = 0; j < dirEntries.length; j++) {
+      var child = dirEntries[j];
+      var childName = String(child.name || "");
+      if (child.type === "file" && childName === "event.json") {
+        eventJsonPath = child.path;
+      } else if (child.type === "file" && /^poster\.(jpg|jpeg|png|webp|svg)$/i.test(childName)) {
+        posterPath = child.path;
+      } else if (child.type === "dir" && childName === "gallery" && !fallbackPosterPath) {
+        var galleryEntries = listDirectory(repo, child.path);
+        for (var k = 0; k < galleryEntries.length; k++) {
+          var image = galleryEntries[k];
+          if (image.type === "file" && /\.(jpg|jpeg|png|webp|svg)$/i.test(String(image.name || ""))) {
+            fallbackPosterPath = image.path;
+            break;
+          }
+        }
       }
-
-      out.push(obj);
     }
 
-    return out;
-}
+    if (!eventJsonPath) continue;
 
+    var meta = parseJsonFile(repo, eventJsonPath);
+    var poster = posterPath || fallbackPosterPath;
+    if (!meta || !meta.slug || !meta.title || !meta.date || !poster) continue;
 
-function repairPosterPermissions() {
-  var props = PropertiesService.getScriptProperties();
-  var sheetId = props.getProperty("SHEET_ID");
-  var sheetName = props.getProperty("SHEET_NAME") || "events";
-  if (!sheetId) return { ok: false, error: "Missing SHEET_ID" };
-
-  var ss = SpreadsheetApp.openById(sheetId);
-  var sh = ss.getSheetByName(sheetName);
-  if (!sh || sh.getLastRow() < 2) return { ok: true, updated: 0, scanned: 0 };
-
-  var range = sh.getDataRange();
-  var values = range.getValues();
-  var headers = values[0];
-  var posterIndex = headers.indexOf("posterUrl");
-  if (posterIndex < 0) return { ok: false, error: "posterUrl column not found" };
-
-  var updated = 0;
-  var scanned = 0;
-  for (var r = 1; r < values.length; r++) {
-    var current = String(values[r][posterIndex] || "");
-    var fileId = extractDriveFileId(current);
-    scanned++;
-    if (!fileId) continue;
-
-    try {
-      var file = DriveApp.getFileById(fileId);
-      file.setSharing(DriveApp.Access.ANYONE_WITH_LINK, DriveApp.Permission.VIEW);
-      values[r][posterIndex] = buildPublicImageUrl(file);
-      updated++;
-    } catch (_err) {
-      // Ignore per-row errors and continue.
-    }
+    feed.push({
+      slug: String(meta.slug || ""),
+      title: String(meta.title || ""),
+      date: normalizeDate(meta.date),
+      time: String(meta.time || ""),
+      location: String(meta.location || ""),
+      status: normalizeStatus(meta.status),
+      folder: dirPath,
+      poster: poster,
+      teaser: String(meta.teaser || ""),
+      homepageMatter: String(meta.homepageMatter || "")
+    });
   }
 
-  range.setValues(values);
-  return { ok: true, updated: updated, scanned: scanned };
+  feed.sort(function (a, b) {
+    return String(a.date || "").localeCompare(String(b.date || ""));
+  });
+
+  var content =
+    "/* AUTO-GENERATED by Apps Script GitHub publish */\n\n" +
+    "window.TACT_EVENT_FEED = " +
+    JSON.stringify(feed, null, 2) +
+    ";\n";
+
+  putTextFile(repo, joinPath(repo.eventsRoot, "events-feed.js"), content, "Rebuild static event feed");
 }
 
-function getOrCreateChild(parentFolder, childName) {
-  var it = parentFolder.getFoldersByName(childName);
-  return it.hasNext() ? it.next() : parentFolder.createFolder(childName);
+function getRepoConfig(props) {
+  var token = String(props.getProperty("GITHUB_TOKEN") || "");
+  var owner = String(props.getProperty("GITHUB_OWNER") || "");
+  var repo = String(props.getProperty("GITHUB_REPO") || "");
+  var branch = String(props.getProperty("GITHUB_BRANCH") || "main");
+  var eventsRoot = String(props.getProperty("GITHUB_EVENTS_ROOT") || "content/events");
+
+  if (!token || !owner || !repo) {
+    throw new Error("Missing GitHub script properties.");
+  }
+
+  return {
+    token: token,
+    owner: owner,
+    repo: repo,
+    branch: branch,
+    eventsRoot: trimSlashes(eventsRoot)
+  };
 }
 
-function jsonOut(obj, statusCode) {
-  // Apps Script ContentService does not support custom status codes directly.
-  // statusCode is included in payload.
-  obj.statusCode = statusCode;
-  return ContentService
-    .createTextOutput(JSON.stringify(obj))
-    .setMimeType(ContentService.MimeType.JSON);
+function listDirectory(repo, path) {
+  var data = githubRequest(repo, "get", "contents/" + encodePath(path) + "?ref=" + encodeURIComponent(repo.branch));
+  return Array.isArray(data) ? data : [];
+}
+
+function getFile(repo, path) {
+  try {
+    var data = githubRequest(repo, "get", "contents/" + encodePath(path) + "?ref=" + encodeURIComponent(repo.branch));
+    return {
+      exists: true,
+      sha: String(data.sha || ""),
+      content: decodeBase64Content(data.content),
+      encoding: String(data.encoding || "")
+    };
+  } catch (err) {
+    if (String(err && err.message || "").indexOf("404") >= 0) {
+      return { exists: false, sha: "", content: "" };
+    }
+    throw err;
+  }
+}
+
+function parseJsonFile(repo, path) {
+  var file = getFile(repo, path);
+  if (!file.exists) return null;
+  return JSON.parse(file.content || "{}");
+}
+
+function putIfMissing(repo, path, text, message) {
+  var file = getFile(repo, path);
+  if (file.exists) return;
+  putTextFile(repo, path, text, message);
+}
+
+function putTextFile(repo, path, text, message) {
+  var file = getFile(repo, path);
+  var payload = {
+    message: message,
+    content: Utilities.base64Encode(Utilities.newBlob(String(text || ""), "text/plain").getBytes()),
+    branch: repo.branch
+  };
+  if (file.exists && file.sha) payload.sha = file.sha;
+  githubRequest(repo, "put", "contents/" + encodePath(path), payload);
+}
+
+function putBinaryFile(repo, path, base64Content, message) {
+  var file = getFile(repo, path);
+  var payload = {
+    message: message,
+    content: String(base64Content || "").replace(/\s+/g, ""),
+    branch: repo.branch
+  };
+  if (file.exists && file.sha) payload.sha = file.sha;
+  githubRequest(repo, "put", "contents/" + encodePath(path), payload);
+}
+
+function removeOtherPosterVariants(repo, eventDir, keepFilename) {
+  var entries = [];
+  try {
+    entries = listDirectory(repo, eventDir);
+  } catch (err) {
+    if (String(err && err.message || "").indexOf("404") >= 0) return;
+    throw err;
+  }
+
+  for (var i = 0; i < entries.length; i++) {
+    var entry = entries[i];
+    if (entry.type !== "file") continue;
+
+    var name = String(entry.name || "");
+    if (!/^poster\.(jpg|jpeg|png|webp|svg)$/i.test(name)) continue;
+    if (name === keepFilename) continue;
+
+    githubRequest(repo, "delete", "contents/" + encodePath(entry.path), {
+      message: "Remove replaced poster " + name,
+      sha: String(entry.sha || ""),
+      branch: repo.branch
+    });
+  }
+}
+
+function githubRequest(repo, method, apiPath, payload) {
+  var url = "https://api.github.com/repos/" + encodeURIComponent(repo.owner) + "/" + encodeURIComponent(repo.repo) + "/" + apiPath;
+  var options = {
+    method: String(method || "get").toUpperCase(),
+    headers: {
+      Authorization: "Bearer " + repo.token,
+      Accept: "application/vnd.github+json"
+    },
+    muteHttpExceptions: true
+  };
+
+  if (payload) {
+    options.contentType = "application/json";
+    options.payload = JSON.stringify(payload);
+  }
+
+  var response = UrlFetchApp.fetch(url, options);
+  var status = response.getResponseCode();
+  var text = response.getContentText() || "";
+
+  if (status < 200 || status >= 300) {
+    throw new Error("GitHub API " + status + ": " + text);
+  }
+
+  return text ? JSON.parse(text) : {};
+}
+
+function buildEventJson(eventObj) {
+  return (
+    "{\n" +
+    '  "slug": ' + jsonString(eventObj.slug) + ",\n" +
+    '  "title": ' + jsonString(eventObj.title) + ",\n" +
+    '  "date": ' + jsonString(eventObj.date) + ",\n" +
+    '  "time": ' + jsonString(eventObj.time) + ",\n" +
+    '  "location": ' + jsonString(eventObj.location) + ",\n" +
+    '  "teaser": ' + jsonString(eventObj.teaser) + ",\n" +
+    '  "homepageMatter": ' + jsonString(eventObj.homepageMatter) + ",\n" +
+    '  "status": ' + jsonString(eventObj.status) + "\n" +
+    "}\n"
+  );
+}
+
+function jsonString(value) {
+  return JSON.stringify(String(value || ""));
+}
+
+function decodeBase64Content(value) {
+  var clean = String(value || "").replace(/\s+/g, "");
+  if (!clean) return "";
+  return Utilities.newBlob(Utilities.base64Decode(clean)).getDataAsString("UTF-8");
+}
+
+function sanitizeSlug(value) {
+  return String(value || "")
+    .toLowerCase()
+    .replace(/[^a-z0-9]+/g, "-")
+    .replace(/^-+|-+$/g, "");
+}
+
+function buildSlug(date, title) {
+  return sanitizeSlug(String(date || "") + "--" + String(title || ""));
+}
+
+function normalizeDate(value) {
+  var raw = String(value || "").trim();
+  if (!raw) return "";
+  if (/^\d{4}-\d{2}-\d{2}$/.test(raw)) return raw;
+  return raw;
+}
+
+function normalizeStatus(value) {
+  return String(value || "").toLowerCase() === "completed" ? "completed" : "scheduled";
+}
+
+function inferPosterExtension(posterObj) {
+  var mime = String((posterObj && posterObj.mime) || "").toLowerCase();
+  var name = String((posterObj && posterObj.name) || "").toLowerCase();
+  if (mime.indexOf("svg") >= 0 || /\.svg$/.test(name)) return ".svg";
+  if (mime.indexOf("webp") >= 0 || /\.webp$/.test(name)) return ".webp";
+  if (mime.indexOf("png") >= 0 || /\.png$/.test(name)) return ".png";
+  if (mime.indexOf("jpeg") >= 0 || mime.indexOf("jpg") >= 0 || /\.(jpe?g)$/.test(name)) return ".jpg";
+  throw new Error("Unsupported poster type. Use JPG, PNG, WEBP, or SVG.");
+}
+
+function trimSlashes(value) {
+  return String(value || "").replace(/^\/+|\/+$/g, "");
+}
+
+function joinPath(left, right) {
+  return trimSlashes(left) + "/" + trimSlashes(right);
+}
+
+function encodePath(path) {
+  var parts = String(path || "").split("/");
+  var out = [];
+  for (var i = 0; i < parts.length; i++) {
+    out.push(encodeURIComponent(parts[i]));
+  }
+  return out.join("/");
 }
 
 function isValidPin(value) {
   return /^[0-9]{4,}$/.test(String(value || ""));
 }
 
-function buildPublicImageUrl(file) {
-    return "https://drive.google.com/thumbnail?id=" + file.getId() + "&sz=w1600";
+function jsonOut(obj, statusCode) {
+  obj.statusCode = statusCode;
+  return ContentService.createTextOutput(JSON.stringify(obj)).setMimeType(ContentService.MimeType.JSON);
 }
-
-function normalizePosterUrl(url) {
-    var fileId = extractDriveFileId(url);
-    if (!fileId) return String(url || "");
-    return "https://drive.google.com/thumbnail?id=" + fileId + "&sz=w1600";
-}
-
-
-function extractDriveFileId(url) {
-    var raw = String(url || "");
-    var queryMatch = raw.match(/[?&]id=([^&]+)/i);
-    if (queryMatch && queryMatch[1]) return queryMatch[1];
-
-    var pathMatch = raw.match(/\/d\/([^/]+)/i);
-    if (pathMatch && pathMatch[1]) return pathMatch[1];
-
-    return "";
-}
-

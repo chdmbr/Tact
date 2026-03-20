@@ -94,6 +94,7 @@ function Build-Feed([string]$EventsRoot) {
       date = [string]$meta.date
       time = [string]$meta.time
       location = [string]$meta.location
+      status = [string]$meta.status
       folder = To-PosixPath((Join-Path $EventsRoot $dir.Name))
       poster = To-PosixPath((Join-Path (Join-Path $EventsRoot $dir.Name) $poster.Name))
       teaser = [string]$meta.teaser

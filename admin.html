@@ -218,7 +218,12 @@
   <script src="assets/js/events-config.js"></script>
   <script>
     const ADMIN_CONFIG = {
-      endpoint: String((window.TACT_EVENTS_CONFIG && window.TACT_EVENTS_CONFIG.apiEndpoint) || "").trim()
+      endpoint: String(
+        (
+          window.TACT_EVENTS_CONFIG &&
+          (window.TACT_EVENTS_CONFIG.adminEndpoint || window.TACT_EVENTS_CONFIG.apiEndpoint)
+        ) || ""
+      ).trim()
     };
 
     const pinCard = document.getElementById("pin-card");
@@ -404,7 +409,7 @@
           throw new Error(body.error || "Submit failed");
         }
 
-        statusBox.textContent = "Submitted successfully. Event is now in backend.";
+        statusBox.textContent = "Submitted successfully. GitHub publish requested.";
       } catch (err) {
         statusBox.textContent = "Submit failed: " + (err && err.message ? err.message : "Unknown error");
       }
