@@ -6,6 +6,7 @@ function initEventsPage() {
     initialEvents = Array.isArray(window.TACT_EVENT_FEED) ? window.TACT_EVENT_FEED.slice() : [];
   }
 
+  preloadPriorityPoster(initialEvents);
   renderEventSections(initialEvents);
 
   if (typeof window.loadTactEventFeed === "function") {
@@ -82,6 +83,40 @@ function splitEvents(events) {
   });
 
   return { upcoming: upcoming, archive: archive };
+}
+
+function preloadPriorityPoster(events) {
+  var buckets = splitEvents(events);
+  var first = buckets.upcoming[0];
+  if (!first) return;
+
+  var posterUrl = String(first.poster || first.image || "").trim();
+  if (!posterUrl) return;
+
+  ensureImagePreload(posterUrl);
+
+  var warm = new Image();
+  warm.fetchPriority = "high";
+  warm.decoding = "sync";
+  warm.src = posterUrl;
+}
+
+function ensureImagePreload(url) {
+  var head = document.head || document.getElementsByTagName("head")[0];
+  if (!head) return;
+
+  var existing = document.querySelector('link[rel="preload"][as="image"][href="' + cssEscape(url) + '"]');
+  if (existing) return;
+
+  var link = document.createElement("link");
+  link.rel = "preload";
+  link.as = "image";
+  link.href = url;
+  head.appendChild(link);
+}
+
+function cssEscape(value) {
+  return String(value || "").replace(/["\\]/g, "\\$&");
 }
 
 function sameEventList(left, right) {
@@ -175,7 +210,9 @@ function buildUpcomingCard(item, isPriority) {
     (isPriority ? "eager" : "lazy") +
     '" fetchpriority="' +
     (isPriority ? "high" : "auto") +
-    '" decoding="async">' +
+    '" decoding="' +
+    (isPriority ? "sync" : "async") +
+    '">' +
     '<div class="event-body">' +
     '<span class="meta">' +
     escapeHtml(formatDate(item.date)) +
