@@ -1,4 +1,4 @@
-const CACHE_NAME = 'tact-v1';
+const CACHE_NAME = 'tact-v2';
 const urlsToCache = [
   '/',
   '/index.html',
@@ -24,8 +24,34 @@ self.addEventListener('install', event => {
   );
 });
 
-// Fetch event - serve from cache when offline
+function shouldUseNetworkFirst(request) {
+  if (request.mode === 'navigate') {
+    return true;
+  }
+
+  const url = new URL(request.url);
+  return url.origin === self.location.origin && url.pathname.endsWith('/content/events/events-feed.js');
+}
+
+// Fetch event - prefer network for pages and event feed, cache-first elsewhere
 self.addEventListener('fetch', event => {
+  if (shouldUseNetworkFirst(event.request)) {
+    event.respondWith(
+      fetch(event.request)
+        .then(response => {
+          if (response && response.status === 200 && response.type === 'basic') {
+            const responseToCache = response.clone();
+            caches.open(CACHE_NAME).then(cache => {
+              cache.put(event.request, responseToCache);
+            });
+          }
+          return response;
+        })
+        .catch(() => caches.match(event.request))
+    );
+    return;
+  }
+
   event.respondWith(
     caches.match(event.request)
       .then(response => {

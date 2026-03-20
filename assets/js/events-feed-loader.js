@@ -1,7 +1,7 @@
 (function () {
   var cache = null;
   var inFlight = null;
-  var STORAGE_KEY = "tact-event-feed-cache-v1";
+  var STORAGE_KEY = "tact-event-feed-cache-v2";
 
   function localFeed() {
     return Array.isArray(window.TACT_EVENT_FEED) ? window.TACT_EVENT_FEED.slice() : [];
@@ -104,6 +104,16 @@
     }
   }
 
+  function clearStoredFeed() {
+    if (!canUseSessionStorage()) return;
+
+    try {
+      window.sessionStorage.removeItem(STORAGE_KEY);
+    } catch (_error) {
+      // Ignore storage and privacy-mode failures.
+    }
+  }
+
   function indexBySlug(items) {
     var map = {};
     items.forEach(function (item) {
@@ -166,9 +176,20 @@
     });
   }
 
-  function getBaseFeed() {
+  function getBaseFeed(endpoint) {
     var base = localFeed().map(normalizeEvent);
     var fallbackMap = indexBySlug(base);
+
+    if (!endpoint || shouldUseLocalFeedOnly()) {
+      cache = base;
+      clearStoredFeed();
+      return {
+        base: base,
+        fallbackMap: fallbackMap,
+        initial: cache.slice()
+      };
+    }
+
     var stored = readStoredFeed();
     if (stored.length) {
       cache = mergeWithFallback(stored, fallbackMap);
@@ -189,7 +210,9 @@
 
   window.getTactEventFeedSnapshot = function () {
     if (cache) return cache.slice();
-    return getBaseFeed().initial;
+    var config = window.TACT_EVENTS_CONFIG || {};
+    var endpoint = String(config.apiEndpoint || "").trim();
+    return getBaseFeed(endpoint).initial;
   };
 
   window.loadTactEventFeed = async function (options) {
@@ -199,10 +222,10 @@
     if (cache && !forceRefresh) return cache.slice();
     if (inFlight && !forceRefresh) return inFlight;
 
-    var state = getBaseFeed();
     var config = window.TACT_EVENTS_CONFIG || {};
     var endpoint = String(config.apiEndpoint || "").trim();
     var timeoutMs = Number(config.requestTimeoutMs || 10000);
+    var state = getBaseFeed(endpoint);
 
     if (!endpoint || shouldUseLocalFeedOnly()) {
       return cache.slice();
