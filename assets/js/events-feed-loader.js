@@ -1,8 +1,18 @@
 (function () {
   var cache = null;
+  var inFlight = null;
+  var STORAGE_KEY = "tact-event-feed-cache-v1";
 
   function localFeed() {
     return Array.isArray(window.TACT_EVENT_FEED) ? window.TACT_EVENT_FEED.slice() : [];
+  }
+
+  function canUseSessionStorage() {
+    try {
+      return !!window.sessionStorage;
+    } catch (_error) {
+      return false;
+    }
   }
 
   function shouldUseLocalFeedOnly() {
@@ -60,6 +70,38 @@
       status: normalizeStatus(raw.status),
       poster: toPublicPosterUrl(raw.posterUrl || raw.poster || raw.image || "")
     };
+  }
+
+  function readStoredFeed() {
+    if (!canUseSessionStorage()) return [];
+
+    try {
+      var raw = window.sessionStorage.getItem(STORAGE_KEY);
+      if (!raw) return [];
+      var parsed = JSON.parse(raw);
+      var rows = Array.isArray(parsed && parsed.events) ? parsed.events : [];
+      return rows.map(normalizeEvent).filter(function (event) {
+        return event.title && event.date;
+      });
+    } catch (_error) {
+      return [];
+    }
+  }
+
+  function writeStoredFeed(events) {
+    if (!canUseSessionStorage()) return;
+
+    try {
+      window.sessionStorage.setItem(
+        STORAGE_KEY,
+        JSON.stringify({
+          storedAt: Date.now(),
+          events: events
+        })
+      );
+    } catch (_error) {
+      // Ignore storage quota and privacy-mode failures.
+    }
   }
 
   function indexBySlug(items) {
@@ -124,27 +166,61 @@
     });
   }
 
-  window.loadTactEventFeed = async function () {
-    if (cache) return cache.slice();
-
+  function getBaseFeed() {
     var base = localFeed().map(normalizeEvent);
     var fallbackMap = indexBySlug(base);
+    var stored = readStoredFeed();
+    if (stored.length) {
+      cache = mergeWithFallback(stored, fallbackMap);
+      return {
+        base: base,
+        fallbackMap: fallbackMap,
+        initial: cache.slice()
+      };
+    }
+
+    cache = base;
+    return {
+      base: base,
+      fallbackMap: fallbackMap,
+      initial: cache.slice()
+    };
+  }
+
+  window.getTactEventFeedSnapshot = function () {
+    if (cache) return cache.slice();
+    return getBaseFeed().initial;
+  };
+
+  window.loadTactEventFeed = async function (options) {
+    var settings = options || {};
+    var forceRefresh = settings.forceRefresh === true;
+
+    if (cache && !forceRefresh) return cache.slice();
+    if (inFlight && !forceRefresh) return inFlight;
+
+    var state = getBaseFeed();
     var config = window.TACT_EVENTS_CONFIG || {};
     var endpoint = String(config.apiEndpoint || "").trim();
     var timeoutMs = Number(config.requestTimeoutMs || 10000);
 
     if (!endpoint || shouldUseLocalFeedOnly()) {
-      cache = base;
       return cache.slice();
     }
 
-    try {
-      var remote = await fetchRemoteFeed(endpoint, timeoutMs);
-      cache = remote.length ? mergeWithFallback(remote, fallbackMap) : base;
-      return cache.slice();
-    } catch (_error) {
-      cache = base;
-      return cache.slice();
-    }
+    inFlight = fetchRemoteFeed(endpoint, timeoutMs)
+      .then(function (remote) {
+        cache = remote.length ? mergeWithFallback(remote, state.fallbackMap) : state.base;
+        writeStoredFeed(cache);
+        return cache.slice();
+      })
+      .catch(function () {
+        return cache.slice();
+      })
+      .finally(function () {
+        inFlight = null;
+      });
+
+    return inFlight;
   };
 })();

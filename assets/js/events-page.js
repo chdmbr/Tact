@@ -1,15 +1,37 @@
-document.addEventListener("DOMContentLoaded", async function () {
+document.addEventListener("DOMContentLoaded", function () {
   if (window.TACT_CHROME) {
     window.TACT_CHROME.renderHeader();
     window.TACT_CHROME.initDropdowns();
   }
 
-  var events = [];
-  if (typeof window.loadTactEventFeed === "function") {
-    events = await window.loadTactEventFeed();
+  var initialEvents = [];
+  if (typeof window.getTactEventFeedSnapshot === "function") {
+    initialEvents = window.getTactEventFeedSnapshot();
   } else {
-    events = Array.isArray(window.TACT_EVENT_FEED) ? window.TACT_EVENT_FEED.slice() : [];
+    initialEvents = Array.isArray(window.TACT_EVENT_FEED) ? window.TACT_EVENT_FEED.slice() : [];
   }
+
+  renderEventSections(initialEvents);
+
+  if (typeof window.loadTactEventFeed === "function") {
+    window.loadTactEventFeed({ forceRefresh: true }).then(function (freshEvents) {
+      if (!sameEventList(initialEvents, freshEvents)) {
+        renderEventSections(freshEvents);
+      }
+    });
+  }
+
+  var year = document.getElementById("year");
+  if (year) year.textContent = String(new Date().getFullYear());
+});
+
+function renderEventSections(events) {
+  var buckets = splitEvents(events);
+  renderUpcoming(buckets.upcoming);
+  renderArchive(buckets.archive);
+}
+
+function splitEvents(events) {
   var today = new Date();
   today.setHours(0, 0, 0, 0);
 
@@ -36,12 +58,12 @@ document.addEventListener("DOMContentLoaded", async function () {
     return parseDate(b.date) - parseDate(a.date);
   });
 
-  renderUpcoming(upcoming);
-  renderArchive(archive);
+  return { upcoming: upcoming, archive: archive };
+}
 
-  var year = document.getElementById("year");
-  if (year) year.textContent = String(new Date().getFullYear());
-});
+function sameEventList(left, right) {
+  return JSON.stringify(left || []) === JSON.stringify(right || []);
+}
 
 function parseDate(value) {
   if (!value) return null;
@@ -77,7 +99,7 @@ function renderUpcoming(list) {
       escapeHtml(item.poster || item.image || "assets/images/tact-logo.jpg") +
       '" onerror="this.onerror=null;this.src=\'assets/images/tact-logo.jpg\';" alt="' +
       escapeHtml(item.title || "Event image") +
-      '" loading="lazy">' +
+      '" loading="eager" fetchpriority="high" decoding="async">' +
       '<div class="event-body">' +
       '<span class="meta">' +
       escapeHtml(formatDate(item.date)) +
@@ -115,7 +137,7 @@ function renderArchive(list) {
       escapeHtml(item.poster || item.image || "assets/images/tact-logo.jpg") +
       '" onerror="this.onerror=null;this.src=\'assets/images/tact-logo.jpg\';" alt="' +
       escapeHtml(item.title || "Event image") +
-      '" loading="lazy">' +
+      '" loading="lazy" decoding="async">' +
       '<div class="archive-body">' +
       '<span class="meta">' +
       escapeHtml(formatDate(item.date)) +
