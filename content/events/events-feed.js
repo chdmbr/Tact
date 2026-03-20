@@ -62,6 +62,18 @@ window.TACT_EVENT_FEED = [
     "homepageMatter": "nithish"
   },
   {
+    "slug": "2026-03-31-hi-raa",
+    "title": "hi raa",
+    "date": "2026-03-31",
+    "time": "10:11 AM - 12:38 PM",
+    "location": "ij er",
+    "status": "scheduled",
+    "folder": "content/events/2026-03-31-hi-raa",
+    "poster": "content/events/2026-03-31-hi-raa/poster.jpg",
+    "teaser": "iejwijd",
+    "homepageMatter": "efjp feihjfieo hfceiwojfco"
+  },
+  {
     "slug": "2026-yuvati-mentorship-day",
     "title": "Vijnana Yuvati Mentorship Day",
     "date": "2026-04-10",
