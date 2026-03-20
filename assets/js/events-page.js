@@ -111,6 +111,12 @@ function renderArchive(list) {
     var article = document.createElement("article");
     article.className = "archive-item";
     article.innerHTML =
+      '<img src="' +
+      escapeHtml(item.poster || item.image || "assets/images/tact-logo.jpg") +
+      '" onerror="this.onerror=null;this.src=\'assets/images/tact-logo.jpg\';" alt="' +
+      escapeHtml(item.title || "Event image") +
+      '" loading="lazy">' +
+      '<div class="archive-body">' +
       '<span class="meta">' +
       escapeHtml(formatDate(item.date)) +
       " | " +
@@ -123,7 +129,8 @@ function renderArchive(list) {
       "</h3>" +
       "<p>" +
       escapeHtml(item.teaser || item.homepageMatter || "") +
-      "</p>";
+      "</p>" +
+      "</div>";
     root.appendChild(article);
   });
 }

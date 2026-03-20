@@ -918,6 +918,19 @@
         box-shadow: 0 18px 52px rgba(6, 80, 40, 0.26);
       }
 
+      .ctas .btn-secondary {
+        background: linear-gradient(180deg, var(--green), #07602c);
+        color: #ffffff;
+        box-shadow: 0 12px 36px rgba(6, 80, 40, 0.14);
+        border: 1px solid rgba(184, 134, 11, 0.35);
+      }
+
+      .ctas .btn-secondary:hover {
+        transform: translateY(-4px) scale(1.01);
+        box-shadow: 0 18px 52px rgba(6, 80, 40, 0.26);
+        border-color: rgba(184, 134, 11, 0.35);
+      }
+
       .btn-secondary {
         background: linear-gradient(180deg, #ffffff, #f6f5f2);
         color: var(--muted);
@@ -934,38 +947,6 @@
       .btn:focus-visible {
         outline: 2px solid var(--green);
         outline-offset: 3px;
-      }
-
-      /* Gentle colour oscillation for the two secondary CTAs in the closing row */
-      .ctas .btn-secondary {
-        animation: cta-oscillate 7s ease-in-out infinite alternate;
-      }
-
-      .ctas .btn-secondary:hover {
-        animation-play-state: paused;
-      }
-
-      @keyframes cta-oscillate {
-        0% {
-          background: linear-gradient(180deg, #ffffff, #f6f5f2);
-          color: var(--muted);
-          border-color: rgba(0, 0, 0, 0.06);
-        }
-        40% {
-          background: linear-gradient(135deg, #ffffff, #e9f7f0);
-          color: #064e3b;
-          border-color: rgba(10, 122, 58, 0.35);
-        }
-        70% {
-          background: linear-gradient(135deg, #0a7a3a, #07602c);
-          color: #ffffff;
-          border-color: rgba(184, 134, 11, 0.45);
-        }
-        100% {
-          background: linear-gradient(180deg, #ffffff, #f6f5f2);
-          color: var(--muted);
-          border-color: rgba(0, 0, 0, 0.08);
-        }
       }
 
       /* How-it-works list */

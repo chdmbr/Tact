@@ -109,11 +109,13 @@ function setupScriptPropertiesOnce() {
   };
 }
 
+
 function doGet(e) {
-  var mode = (e && e.parameter && e.parameter.mode) ? e.parameter.mode : "feed";
-  if (mode === "health") return jsonOut({ ok: true, status: "healthy" }, 200);
-  return jsonOut({ ok: true, events: readEvents() }, 200);
+    var mode = (e && e.parameter && e.parameter.mode) ? e.parameter.mode : "feed";
+    if (mode === "health") return jsonOut({ ok: true, status: "healthy" }, 200);
+    return jsonOut({ ok: true, events: readEvents() }, 200);
 }
+
 
 function savePoster(rootFolderId, slug, posterObj) {
   if (!posterObj || !posterObj.data) return null;
@@ -182,25 +184,33 @@ function findEventRowBySlug(sheetId, sheetName, slug) {
 }
 
 function readEvents() {
-  var props = PropertiesService.getScriptProperties();
-  var sheetId = props.getProperty("SHEET_ID");
-  var sheetName = props.getProperty("SHEET_NAME") || "events";
-  if (!sheetId) return [];
+    var props = PropertiesService.getScriptProperties();
+    var sheetId = props.getProperty("SHEET_ID");
+    var sheetName = props.getProperty("SHEET_NAME") || "events";
+    if (!sheetId) return [];
 
-  var ss = SpreadsheetApp.openById(sheetId);
-  var sh = ss.getSheetByName(sheetName);
-  if (!sh || sh.getLastRow() < 2) return [];
+    var ss = SpreadsheetApp.openById(sheetId);
+    var sh = ss.getSheetByName(sheetName);
+    if (!sh || sh.getLastRow() < 2) return [];
 
-  var values = sh.getDataRange().getValues();
-  var headers = values[0];
-  var out = [];
-  for (var r = 1; r < values.length; r++) {
-    var obj = {};
-    for (var c = 0; c < headers.length; c++) obj[headers[c]] = values[r][c];
-    out.push(obj);
-  }
-  return out;
+    var values = sh.getDataRange().getValues();
+    var headers = values[0];
+    var out = [];
+
+    for (var r = 1; r < values.length; r++) {
+      var obj = {};
+      for (var c = 0; c < headers.length; c++) obj[headers[c]] = values[r][c];
+
+      if (obj.posterUrl) {
+        obj.posterUrl = normalizePosterUrl(obj.posterUrl);
+      }
+
+      out.push(obj);
+    }
+
+    return out;
 }
+
 
 function repairPosterPermissions() {
   var props = PropertiesService.getScriptProperties();
@@ -259,16 +269,24 @@ function isValidPin(value) {
 }
 
 function buildPublicImageUrl(file) {
-  return "https://drive.google.com/uc?export=view&id=" + file.getId();
+    return "https://drive.google.com/thumbnail?id=" + file.getId() + "&sz=w1600";
 }
+
+function normalizePosterUrl(url) {
+    var fileId = extractDriveFileId(url);
+    if (!fileId) return String(url || "");
+    return "https://drive.google.com/thumbnail?id=" + fileId + "&sz=w1600";
+}
+
 
 function extractDriveFileId(url) {
-  var raw = String(url || "");
-  var queryMatch = raw.match(/[?&]id=([^&]+)/i);
-  if (queryMatch && queryMatch[1]) return queryMatch[1];
+    var raw = String(url || "");
+    var queryMatch = raw.match(/[?&]id=([^&]+)/i);
+    if (queryMatch && queryMatch[1]) return queryMatch[1];
 
-  var pathMatch = raw.match(/\/d\/([^/]+)/i);
-  if (pathMatch && pathMatch[1]) return pathMatch[1];
+    var pathMatch = raw.match(/\/d\/([^/]+)/i);
+    if (pathMatch && pathMatch[1]) return pathMatch[1];
 
-  return "";
+    return "";
 }
+

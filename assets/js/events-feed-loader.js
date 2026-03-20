@@ -5,6 +5,12 @@
     return Array.isArray(window.TACT_EVENT_FEED) ? window.TACT_EVENT_FEED.slice() : [];
   }
 
+  function shouldUseLocalFeedOnly() {
+    var host = window.location && window.location.hostname;
+    var protocol = window.location && window.location.protocol;
+    return protocol === "file:" || host === "localhost" || host === "127.0.0.1";
+  }
+
   function normalizeStatus(value) {
     var status = String(value || "scheduled").toLowerCase();
     return status === "completed" ? "completed" : "scheduled";
@@ -33,10 +39,10 @@
     var raw = String(value || "").trim();
     if (!raw) return "";
 
-    // Convert standard Drive links to direct image links.
+    // Convert common Drive share links to a thumbnail URL that is more reliable in <img>.
     var match = raw.match(/[?&]id=([^&]+)/i) || raw.match(/\/d\/([^/]+)/i);
     if (raw.indexOf("drive.google.com") >= 0 && match && match[1]) {
-      return "https://drive.google.com/uc?export=view&id=" + match[1];
+      return "https://drive.google.com/thumbnail?id=" + match[1] + "&sz=w1600";
     }
 
     return raw;
@@ -54,6 +60,34 @@
       status: normalizeStatus(raw.status),
       poster: toPublicPosterUrl(raw.posterUrl || raw.poster || raw.image || "")
     };
+  }
+
+  function indexBySlug(items) {
+    var map = {};
+    items.forEach(function (item) {
+      if (!item.slug) return;
+      map[item.slug] = item;
+    });
+    return map;
+  }
+
+  function mergeWithFallback(remoteItems, fallbackMap) {
+    return remoteItems.map(function (item) {
+      var fallback = fallbackMap[item.slug];
+      if (!fallback) return item;
+
+      return {
+        slug: item.slug || fallback.slug,
+        title: item.title || fallback.title,
+        date: item.date || fallback.date,
+        time: item.time || fallback.time,
+        location: item.location || fallback.location,
+        teaser: item.teaser || fallback.teaser,
+        homepageMatter: item.homepageMatter || fallback.homepageMatter,
+        status: item.status || fallback.status,
+        poster: fallback.poster || item.poster
+      };
+    });
   }
 
   function withTimeout(url, timeoutMs) {
@@ -94,18 +128,19 @@
     if (cache) return cache.slice();
 
     var base = localFeed().map(normalizeEvent);
+    var fallbackMap = indexBySlug(base);
     var config = window.TACT_EVENTS_CONFIG || {};
     var endpoint = String(config.apiEndpoint || "").trim();
     var timeoutMs = Number(config.requestTimeoutMs || 10000);
 
-    if (!endpoint) {
+    if (!endpoint || shouldUseLocalFeedOnly()) {
       cache = base;
       return cache.slice();
     }
 
     try {
       var remote = await fetchRemoteFeed(endpoint, timeoutMs);
-      cache = remote.length ? remote : base;
+      cache = remote.length ? mergeWithFallback(remote, fallbackMap) : base;
       return cache.slice();
     } catch (_error) {
       cache = base;
