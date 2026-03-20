@@ -196,11 +196,58 @@ footer {
     padding: 12px;
   }
 
+  main {
+    margin-top: 18px;
+  }
+
   h1 {
     font-size: 28px;
   }
 
+  .surface {
+    padding: 18px;
+  }
+
+  .hero-section {
+    padding: 36px 18px;
+    border-radius: 18px;
+    margin-bottom: 24px;
+  }
+
   .image-grid {
     grid-template-columns: 1fr;
+  }
+}
+
+@media (max-width: 600px) {
+  .wrap {
+    padding: 12px;
+  }
+
+  .surface,
+  .gallery-card {
+    padding: 14px;
+    border-radius: 12px;
+  }
+
+  .hero-section {
+    padding: 28px 14px;
+  }
+
+  .badge-row {
+    gap: 6px;
+  }
+
+  .btn {
+    width: 100%;
+    margin: 6px 0 0;
+  }
+
+  .image-grid img {
+    height: 220px;
+  }
+
+  footer {
+    padding: 18px 12px 24px;
   }
 }

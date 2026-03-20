@@ -62,7 +62,15 @@
   @keyframes shake{10%{transform:translateX(-6px)}30%{transform:translateX(6px)}50%{transform:translateX(-4px)}70%{transform:translateX(4px)}90%{transform:translateX(-2px)}100%{transform:translateX(0)}}
   .meta{margin-top:18px;color:rgba(255,255,255,0.75);font-size:13px}
   .smalllink{color:rgba(255,255,255,0.9);text-decoration:underline;cursor:pointer}
-  @media (max-width:560px){.card{padding:22px}.typewrap{font-size:16px}}
+  @media (max-width:560px){
+    body{padding:18px}
+    .card{padding:22px}
+    .typewrap{font-size:16px}
+    header{flex-direction:column;align-items:flex-start !important}
+    .secret-area{flex-direction:column;align-items:stretch}
+    input.secret{min-width:0;width:100%}
+    button.unlock{width:100%}
+  }
 </style>
 </head>
 <body>
