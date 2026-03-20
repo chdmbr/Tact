@@ -13,28 +13,18 @@
     <div id="site-header-root"></div>
 
     <main id="main">
-      <section class="surface">
-        <h1>Events</h1>
-        <p>Upcoming events appear here automatically. Once an event date passes, it moves to the archive scroll below.</p>
-      </section>
-
       <section id="upcoming" class="surface">
         <h2>Upcoming Events</h2>
         <div id="upcoming-list" class="event-grid"></div>
       </section>
 
       <section id="archive" class="surface">
-        <h2>Archived Events</h2>
+        <h2>Past Events</h2>
         <div id="archive-list" class="archive-scroll"></div>
-      </section>
-
-      <section class="surface help-box">
-        <h2>How to Update</h2>
-        <p>Use <code>admin.html</code> on your phone, fill the form, and submit. Events move between Upcoming and Archived automatically by status/date.</p>
       </section>
     </main>
 
-    <footer>
+    <footer aria-label="Site footer">
       <p>&copy; <span id="year"></span> The Academy Trust (tAcT). All rights reserved.</p>
     </footer>
   </div>

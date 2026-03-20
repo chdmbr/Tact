@@ -24,16 +24,19 @@
     body {
       margin: 0;
       min-height: 100vh;
-      font-family: system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+      font-family: "Inter", system-ui, -apple-system, "Segoe UI", Roboto, Arial, sans-serif;
       background:
-        radial-gradient(900px 600px at 0% 0%, rgba(10, 122, 58, 0.06), transparent 60%),
-        radial-gradient(900px 600px at 100% 0%, rgba(184, 134, 11, 0.06), transparent 60%),
-        linear-gradient(180deg, #f8faf8, #f5f3ef);
+        linear-gradient(180deg, rgba(10, 40, 20, 0.02), rgba(255, 255, 255, 0.02)),
+        radial-gradient(800px 400px at 10% 10%, rgba(10, 122, 58, 0.03), transparent 10%),
+        var(--bg);
       color: #0f1b1a;
+      line-height: 1.45;
+      -webkit-font-smoothing: antialiased;
+      -moz-osx-font-smoothing: grayscale;
     }
 
     .wrap {
-      max-width: 1160px;
+      max-width: 1200px;
       margin: 0 auto;
       padding: 20px;
     }
@@ -53,15 +56,13 @@
     .donate-hero {
       position: relative;
       padding: 32px 28px 28px;
-      border-radius: 24px;
-      background:
-        radial-gradient(120% 200% at 0% 0%, rgba(10, 122, 58, 0.16), transparent 55%),
-        radial-gradient(120% 200% at 100% 0%, rgba(184, 134, 11, 0.16), transparent 55%),
-        linear-gradient(135deg, #0a2620, #12392d);
-      color: #fdfdfc;
+      border-radius: 18px;
+      background: var(--card);
+      color: #0f1b1a;
       overflow: hidden;
-      box-shadow: 0 24px 60px rgba(5, 20, 12, 0.55);
-      isolation: isolate;
+      box-shadow: 0 18px 60px rgba(20, 30, 20, 0.04);
+      border: 2px solid rgba(9, 9, 9, 0.02);
+      border-top: 3px solid rgba(184, 134, 11, 0.2);
     }
 
     .donate-hero::before {
@@ -70,34 +71,33 @@
       inset: -20%;
       background:
         url("assets/images/tact-logo.jpg") center/340px 340px no-repeat;
-      opacity: 0.08;
-      mix-blend-mode: screen;
+      opacity: 0.03;
       pointer-events: none;
       transform: rotate(-10deg) translateX(12%);
       filter: blur(0.5px);
-      z-index: -1;
     }
 
     .donate-hero-kicker {
       font-size: 12px;
       letter-spacing: 0.12em;
       text-transform: uppercase;
-      color: rgba(255, 255, 255, 0.8);
+      color: var(--muted);
       margin-bottom: 10px;
     }
 
     .donate-hero h1 {
       margin: 0 0 12px;
-      font-size: clamp(30px, 3.4vw, 40px);
-      letter-spacing: -0.02em;
+      font-size: clamp(30px, 3vw, 34px);
+      letter-spacing: -0.03em;
+      color: var(--green);
     }
 
     .donate-hero p {
-      margin: 0 0 18px;
+      margin: 4px 0 14px;
       font-size: 15px;
-      line-height: 1.7;
+      line-height: 1.6;
       max-width: 40rem;
-      color: rgba(244, 250, 247, 0.95);
+      color: var(--muted);
     }
 
     .donate-badges {
@@ -110,12 +110,12 @@
     .donate-badge {
       padding: 6px 10px;
       border-radius: 999px;
-      border: 1px solid rgba(236, 252, 245, 0.55);
+      border: 1px solid rgba(10, 122, 58, 0.14);
       font-size: 11px;
       letter-spacing: 0.06em;
       text-transform: uppercase;
-      color: rgba(237, 252, 244, 0.9);
-      background: linear-gradient(135deg, rgba(11, 122, 58, 0.4), rgba(184, 134, 11, 0.3));
+      color: var(--green);
+      background: rgba(10, 122, 58, 0.08);
     }
 
     .donate-hero-ctas {
@@ -140,34 +140,36 @@
     }
 
     .btn-primary {
-      background: linear-gradient(135deg, #f9f6e8, #f2d27a);
-      color: #1b1305;
-      border-color: rgba(184, 134, 11, 0.6);
-      box-shadow: 0 10px 30px rgba(0, 0, 0, 0.25);
+      background: linear-gradient(180deg, var(--green), #07602c);
+      color: #ffffff;
+      border-color: rgba(184, 134, 11, 0.2);
+      box-shadow: 0 4px 12px rgba(6, 80, 40, 0.15);
     }
 
     .btn-primary:hover {
       transform: translateY(-2px);
-      box-shadow: 0 16px 40px rgba(0, 0, 0, 0.35);
+      box-shadow: 0 6px 16px rgba(6, 80, 40, 0.2);
     }
 
     .btn-secondary {
-      background: rgba(4, 120, 87, 0.12);
-      color: #e6fffa;
-      border-color: rgba(209, 250, 229, 0.4);
+      background: linear-gradient(180deg, #ffffff, #f6f5f2);
+      color: var(--muted);
+      border-color: rgba(0, 0, 0, 0.06);
+      box-shadow: 0 2px 8px rgba(10, 20, 10, 0.06);
     }
 
     .btn-secondary:hover {
-      background: rgba(4, 120, 87, 0.22);
       transform: translateY(-1px);
+      box-shadow: 0 4px 12px rgba(10, 20, 10, 0.1);
     }
 
     .donate-sidecard {
       background: var(--card);
-      border-radius: 22px;
+      border-radius: 18px;
       padding: 22px 22px 20px;
-      box-shadow: 0 16px 45px rgba(15, 23, 42, 0.12);
-      border: 1px solid rgba(15, 23, 42, 0.06);
+      box-shadow: 0 18px 60px rgba(20, 30, 20, 0.04);
+      border: 2px solid rgba(9, 9, 9, 0.02);
+      border-top: 3px solid rgba(184, 134, 11, 0.2);
       position: relative;
       overflow: hidden;
     }
@@ -190,14 +192,14 @@
 
     .donate-sidecard h2 {
       margin: 0 0 12px;
-      font-size: 18px;
-      letter-spacing: -0.01em;
-      color: #0f172a;
+      font-size: 22px;
+      letter-spacing: -0.03em;
+      color: var(--green);
     }
 
     .donate-sidecard p {
-      margin: 0 0 10px;
-      font-size: 14px;
+      margin: 4px 0 10px;
+      font-size: 15px;
       color: #475569;
       line-height: 1.6;
     }
@@ -233,21 +235,22 @@
       background: var(--card);
       border-radius: var(--radius);
       padding: 22px 22px 20px;
-      box-shadow: 0 16px 45px rgba(15, 23, 42, 0.08);
-      border-top: 3px solid rgba(184, 134, 11, 0.35);
+      box-shadow: 0 18px 60px rgba(20, 30, 20, 0.04);
+      border: 2px solid rgba(9, 9, 9, 0.02);
+      border-top: 3px solid rgba(184, 134, 11, 0.2);
     }
 
     .donate-block h2 {
       margin: 0 0 10px;
-      font-size: 18px;
-      letter-spacing: -0.01em;
-      color: #0f172a;
+      font-size: 22px;
+      letter-spacing: -0.03em;
+      color: var(--green);
     }
 
     .donate-block p, .donate-block li {
-      font-size: 14px;
+      font-size: 15px;
       color: #374151;
-      line-height: 1.7;
+      line-height: 1.6;
     }
 
     .donate-block ul {
@@ -311,8 +314,8 @@
     footer {
       padding: 22px 0 10px;
       font-size: 13px;
-      color: #6b7280;
-      border-top: 1px solid rgba(148, 163, 184, 0.35);
+      color: var(--muted);
+      border-top: 1px solid rgba(184, 134, 11, 0.25);
       margin-top: 32px;
     }
 
@@ -355,103 +358,7 @@
 </head>
 <body>
   <div class="wrap">
-    <header class="site-header">
-      <div class="site-header-inner">
-        <div class="site-header-left">
-          <a href="index.html" class="brand-link">
-            <img
-              src="assets/images/tact-logo.jpg"
-              alt="tAcT logo"
-              class="site-logo"
-              loading="lazy"
-              decoding="async"
-            >
-            <div class="site-brand-text">
-              <span class="site-brand-title">The Academy Trust</span>
-              <span class="site-brand-subtitle">Science outreach</span>
-            </div>
-          </a>
-        </div>
-
-        <div class="site-header-center">
-          <nav class="site-nav" aria-label="Primary navigation">
-            <ul class="nav-list">
-              <li class="nav-item nav-item--has-menu">
-                <button
-                  class="nav-trigger"
-                  type="button"
-                  aria-haspopup="true"
-                  aria-expanded="false"
-                >
-                  Outreach Programs
-                </button>
-                <ul class="nav-menu" role="menu">
-                  <li><a href="vijnana-harate.html" role="menuitem">Vijnana Harate</a></li>
-                  <li><a href="vijnana-aranya.html" role="menuitem">Vijnana Aranya</a></li>
-                  <li><a href="vijnana-yuvati.html" role="menuitem">Vijnana Yuvati</a></li>
-                  <li><a href="vijnana-nataka.html" role="menuitem">Vijnana Nataka</a></li>
-                  <li><a href="ganitha-mela.html" role="menuitem">Ganitha Mela</a></li>
-                </ul>
-              </li>
-              <li class="nav-item nav-item--has-menu">
-                <button
-                  class="nav-trigger"
-                  type="button"
-                  aria-haspopup="true"
-                  aria-expanded="false"
-                >
-                  Other Initiatives
-                </button>
-                <ul class="nav-menu" role="menu">
-                  <li><a href="wait.html" role="menuitem">Industry Internship</a></li>
-                  <li><a href="wait.html" role="menuitem">Chair Professorship</a></li>
-                </ul>
-              </li>
-              <li class="nav-item nav-item--has-menu">
-                <button
-                  class="nav-trigger"
-                  type="button"
-                  aria-haspopup="true"
-                  aria-expanded="false"
-                >
-                  Events & Media
-                </button>
-                <ul class="nav-menu" role="menu">
-                  <li><a href="events.html#upcoming" role="menuitem">Events</a></li>
-                  <li><a href="events.html#archive" role="menuitem">Archive</a></li>
-                  <li><a href="events.html#upcoming" role="menuitem">News & Updates</a></li>
-                  <li><a href="events.html#upcoming" role="menuitem">Calendar</a></li>
-                </ul>
-              </li>
-              <li class="nav-item nav-item--has-menu">
-                <button
-                  class="nav-trigger"
-                  type="button"
-                  aria-haspopup="true"
-                  aria-expanded="false"
-                >
-                  Governance
-                </button>
-                <ul class="nav-menu" role="menu">
-                  <li><a href="wait.html" role="menuitem">Founding Trustees</a></li>
-                  <li><a href="wait.html" role="menuitem">Current Trustees</a></li>
-                  <li><a href="wait.html" role="menuitem">Outreach Committee</a></li>
-                  <li><a href="wait.html" role="menuitem">Annual Reports</a></li>
-                  <li><a href="wait.html" role="menuitem">Statutory Documents</a></li>
-                  <li><a href="wait.html" role="menuitem">Office & Contact</a></li>
-                </ul>
-              </li>
-            </ul>
-          </nav>
-        </div>
-
-        <div class="site-header-right">
-          <a href="donate.html" class="nav-link nav-link--primary">
-            <span>Donate</span>
-          </a>
-        </div>
-      </div>
-    </header>
+    <div id="site-header-root"></div>
 
     <main id="main">
       <section class="donate-layout" aria-labelledby="donate-heading">
@@ -551,94 +458,13 @@
     </footer>
   </div>
 
+  <script src="assets/js/site-chrome.js"></script>
   <script>
-    // Accessible navigation menus (same logic as index.html)
     (function () {
-      var navItems = document.querySelectorAll(".nav-item--has-menu");
-      var openItem = null;
-
-      function closeMenu(item, focusTrigger) {
-        if (!item) return;
-        item.classList.remove("nav-item--open");
-        var trigger = item.querySelector('.nav-trigger[aria-haspopup="true"]');
-        if (trigger) {
-          trigger.setAttribute("aria-expanded", "false");
-          if (focusTrigger) trigger.focus();
-        }
-        if (openItem === item) {
-          openItem = null;
-        }
+      if (window.TACT_CHROME) {
+        window.TACT_CHROME.renderHeader();
+        window.TACT_CHROME.initDropdowns();
       }
-
-      navItems.forEach(function (item) {
-        var trigger = item.querySelector('.nav-trigger[aria-haspopup="true"]');
-        var menu = item.querySelector(".nav-menu");
-        if (!trigger || !menu) return;
-
-        trigger.addEventListener("click", function (event) {
-          event.preventDefault();
-          event.stopPropagation();
-          var isOpen = item.classList.contains("nav-item--open");
-          if (isOpen) {
-            closeMenu(item, false);
-          } else {
-            if (openItem && openItem !== item) {
-              closeMenu(openItem, false);
-            }
-            item.classList.add("nav-item--open");
-            trigger.setAttribute("aria-expanded", "true");
-            openItem = item;
-          }
-        });
-
-        trigger.addEventListener("keydown", function (event) {
-          if (event.key === "ArrowDown") {
-            event.preventDefault();
-            if (!item.classList.contains("nav-item--open")) {
-              if (openItem && openItem !== item) {
-                closeMenu(openItem, false);
-              }
-              item.classList.add("nav-item--open");
-              trigger.setAttribute("aria-expanded", "true");
-              openItem = item;
-            }
-            var firstLink = menu.querySelector("a");
-            if (firstLink) {
-              firstLink.focus();
-            }
-          }
-        });
-
-        var menuLinks = menu.querySelectorAll("a");
-        menuLinks.forEach(function (link, index) {
-          link.addEventListener("keydown", function (event) {
-            var lastIndex = menuLinks.length - 1;
-            if (event.key === "ArrowDown") {
-              event.preventDefault();
-              var next = index === lastIndex ? menuLinks[0] : menuLinks[index + 1];
-              if (next) next.focus();
-            } else if (event.key === "ArrowUp") {
-              event.preventDefault();
-              var prev = index === 0 ? menuLinks[lastIndex] : menuLinks[index - 1];
-              if (prev) prev.focus();
-            } else if (event.key === "Escape") {
-              event.preventDefault();
-              closeMenu(item, true);
-            } else if (event.key === "Tab") {
-              closeMenu(item, false);
-            }
-          });
-        });
-      });
-
-      document.addEventListener("click", function (event) {
-        if (!openItem) return;
-        setTimeout(function () {
-          if (openItem && !openItem.contains(event.target)) {
-            closeMenu(openItem, false);
-          }
-        }, 10);
-      });
     })();
   </script>
 </body>

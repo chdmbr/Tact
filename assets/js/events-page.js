@@ -1,4 +1,6 @@
 function initEventsPage() {
+  clearLegacyEventsHash();
+
   var initialEvents = [];
   if (typeof window.getTactEventFeedSnapshot === "function") {
     initialEvents = window.getTactEventFeedSnapshot();
@@ -28,6 +30,18 @@ function initEventsPage() {
     var year = document.getElementById("year");
     if (year) year.textContent = String(new Date().getFullYear());
   });
+}
+
+function clearLegacyEventsHash() {
+  var hash = window.location && window.location.hash;
+  if (hash !== "#upcoming" && hash !== "#archive") return;
+
+  window.setTimeout(function () {
+    window.scrollTo(0, 0);
+    if (window.history && typeof window.history.replaceState === "function") {
+      window.history.replaceState(null, "", window.location.pathname + window.location.search);
+    }
+  }, 0);
 }
 
 function scheduleAsync(callback) {

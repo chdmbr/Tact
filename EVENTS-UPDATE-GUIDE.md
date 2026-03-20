@@ -41,8 +41,7 @@ For each event, keep one folder in `content/events/`:
 ## Event page
 
 - Open `events.html`
-- Upcoming list: `events.html#upcoming`
-- Archive scroll: `events.html#archive`
+- Events page: `events.html`
 
 ## Homepage behavior
 

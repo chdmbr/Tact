@@ -1158,104 +1158,7 @@
   </head>
   <body>
     <div class="wrap">
-      <!-- Shared Ribbon Navigation -->
-      <header class="site-header">
-        <div class="site-header-inner">
-          <div class="site-header-left">
-            <a href="index.html" class="brand-link">
-              <img
-                src="assets/images/tact-logo.jpg"
-                alt="tAcT logo"
-                class="site-logo"
-                loading="lazy"
-                decoding="async"
-              >
-              <div class="site-brand-text">
-                <span class="site-brand-title">The Academy Trust</span>
-                <span class="site-brand-subtitle">Science outreach</span>
-              </div>
-            </a>
-          </div>
-
-          <div class="site-header-center">
-            <nav class="site-nav" aria-label="Primary navigation">
-              <ul class="nav-list">
-                <li class="nav-item nav-item--has-menu">
-                  <button
-                    class="nav-trigger"
-                    type="button"
-                    aria-haspopup="true"
-                    aria-expanded="false"
-                  >
-                    Outreach Programs
-                  </button>
-                  <ul class="nav-menu" role="menu">
-                    <li><a href="vijnana-harate.html" role="menuitem">Vijnana Harate</a></li>
-                    <li><a href="vijnana-aranya.html" role="menuitem">Vijnana Aranya</a></li>
-                    <li><a href="vijnana-yuvati.html" role="menuitem">Vijnana Yuvati</a></li>
-                    <li><a href="vijnana-nataka.html" role="menuitem">Vijnana Nataka</a></li>
-                    <li><a href="ganitha-mela.html" role="menuitem">Ganitha Mela</a></li>
-                  </ul>
-                </li>
-                <li class="nav-item nav-item--has-menu">
-                  <button
-                    class="nav-trigger"
-                    type="button"
-                    aria-haspopup="true"
-                    aria-expanded="false"
-                  >
-                    Other Initiatives
-                  </button>
-                  <ul class="nav-menu" role="menu">
-                    <li><a href="wait.html" role="menuitem">Industry Internship</a></li>
-                    <li><a href="wait.html" role="menuitem">Chair Professorship</a></li>
-                  </ul>
-                </li>
-                <li class="nav-item nav-item--has-menu">
-                  <button
-                    class="nav-trigger"
-                    type="button"
-                    aria-haspopup="true"
-                    aria-expanded="false"
-                  >
-                    Events & Media
-                  </button>
-                  <ul class="nav-menu" role="menu">
-                  <li><a href="events.html#upcoming" role="menuitem">Events</a></li>
-                  <li><a href="events.html#archive" role="menuitem">Archive</a></li>
-                  <li><a href="events.html#upcoming" role="menuitem">News & Updates</a></li>
-                  <li><a href="events.html#upcoming" role="menuitem">Calendar</a></li>
-                  </ul>
-                </li>
-                <li class="nav-item nav-item--has-menu">
-                  <button
-                    class="nav-trigger"
-                    type="button"
-                    aria-haspopup="true"
-                    aria-expanded="false"
-                  >
-                    Governance
-                  </button>
-                  <ul class="nav-menu" role="menu">
-                    <li><a href="wait.html" role="menuitem">Founding Trustees</a></li>
-                    <li><a href="wait.html" role="menuitem">Current Trustees</a></li>
-                    <li><a href="wait.html" role="menuitem">Outreach Committee</a></li>
-                    <li><a href="wait.html" role="menuitem">Annual Reports</a></li>
-                    <li><a href="wait.html" role="menuitem">Statutory Documents</a></li>
-                    <li><a href="wait.html" role="menuitem">Office & Contact</a></li>
-                  </ul>
-                </li>
-              </ul>
-            </nav>
-          </div>
-
-          <div class="site-header-right">
-            <a href="donate.html" class="nav-link nav-link--primary">
-              <span>Donate</span>
-            </a>
-          </div>
-        </div>
-      </header>
+      <div id="site-header-root"></div>
 
       <main id="main">
         <!-- ARRIVAL: first screen -->
@@ -1587,12 +1490,18 @@
       </footer>
     </div>
 
+    <script src="assets/js/site-chrome.js"></script>
     <script src="assets/js/events-config.js"></script>
     <script src="content/events/events-feed.js"></script>
     <script src="assets/js/events-feed-loader.js"></script>
     <script src="assets/js/home-events-board.js"></script>
     <script>
       (function () {
+        if (window.TACT_CHROME) {
+          window.TACT_CHROME.renderHeader();
+          window.TACT_CHROME.initDropdowns();
+        }
+
         var prefersReduced =
           window.matchMedia &&
           window.matchMedia("(prefers-reduced-motion: reduce)").matches;
@@ -1644,96 +1553,6 @@
             });
           });
         }
-
-        // Accessible navigation menus
-        var navItems = document.querySelectorAll(".nav-item--has-menu");
-        var openItem = null;
-
-        function closeMenu(item, focusTrigger) {
-          if (!item) return;
-          item.classList.remove("nav-item--open");
-          var trigger = item.querySelector('.nav-trigger[aria-haspopup="true"]');
-          if (trigger) {
-            trigger.setAttribute("aria-expanded", "false");
-            if (focusTrigger) trigger.focus();
-          }
-          if (openItem === item) {
-            openItem = null;
-          }
-        }
-
-        navItems.forEach(function (item) {
-          var trigger = item.querySelector('.nav-trigger[aria-haspopup="true"]');
-          var menu = item.querySelector(".nav-menu");
-          if (!trigger || !menu) return;
-
-          trigger.addEventListener("click", function (event) {
-            event.preventDefault();
-            event.stopPropagation();
-            var isOpen = item.classList.contains("nav-item--open");
-            if (isOpen) {
-              closeMenu(item, false);
-            } else {
-              if (openItem && openItem !== item) {
-                closeMenu(openItem, false);
-              }
-              item.classList.add("nav-item--open");
-              trigger.setAttribute("aria-expanded", "true");
-              openItem = item;
-              // For mouse clicks, keep focus on the trigger so the header feels stable.
-              // Keyboard users can still move focus into the menu via ArrowDown.
-            }
-          });
-
-          trigger.addEventListener("keydown", function (event) {
-            if (event.key === "ArrowDown") {
-              event.preventDefault();
-              if (!item.classList.contains("nav-item--open")) {
-                if (openItem && openItem !== item) {
-                  closeMenu(openItem, false);
-                }
-                item.classList.add("nav-item--open");
-                trigger.setAttribute("aria-expanded", "true");
-                openItem = item;
-              }
-              var firstLink = menu.querySelector("a");
-              if (firstLink) {
-                firstLink.focus();
-              }
-            }
-          });
-
-          var menuLinks = menu.querySelectorAll("a");
-          menuLinks.forEach(function (link, index) {
-            link.addEventListener("keydown", function (event) {
-              var lastIndex = menuLinks.length - 1;
-              if (event.key === "ArrowDown") {
-                event.preventDefault();
-                var next = index === lastIndex ? menuLinks[0] : menuLinks[index + 1];
-                if (next) next.focus();
-              } else if (event.key === "ArrowUp") {
-                event.preventDefault();
-                var prev = index === 0 ? menuLinks[lastIndex] : menuLinks[index - 1];
-                if (prev) prev.focus();
-              } else if (event.key === "Escape") {
-                event.preventDefault();
-                closeMenu(item, true);
-              } else if (event.key === "Tab") {
-                closeMenu(item, false);
-              }
-            });
-          });
-        });
-
-        document.addEventListener("click", function (event) {
-          if (!openItem) return;
-          // Use a small timeout to allow the trigger click to complete first
-          setTimeout(function() {
-            if (openItem && !openItem.contains(event.target)) {
-              closeMenu(openItem, false);
-            }
-          }, 10);
-        });
 
         // Info card dropdowns (How it works / Who runs this work)
         var infoCardToggles = document.querySelectorAll('.info-card-toggle[data-info-card-target]');

@@ -12,6 +12,7 @@
 
 body {
   margin: 0;
+  font-family: "Inter", system-ui, -apple-system, "Segoe UI", Roboto, Arial, sans-serif;
   background:
     linear-gradient(180deg, rgba(10, 40, 20, 0.02), rgba(255, 255, 255, 0.02)),
     radial-gradient(800px 400px at 10% 10%, rgba(10, 122, 58, 0.03), transparent 10%),
@@ -45,11 +46,23 @@ main {
 h1,
 h2,
 h3 {
-  margin: 0 0 12px;
+  margin: 0 0 8px;
+  letter-spacing: -0.03em;
 }
 
 p {
-  margin: 0 0 12px;
+  margin: 4px 0 10px;
+  font-size: 15px;
+  line-height: 1.6;
+}
+
+h2 {
+  font-size: 22px;
+  color: var(--green);
+}
+
+h3 {
+  font-size: 18px;
 }
 
 .event-grid {
@@ -138,15 +151,19 @@ p {
   background: rgba(10, 122, 58, 0.05);
 }
 
-footer {
+footer[aria-label="Site footer"] {
+  margin-top: 30px;
+  padding-top: 20px;
   text-align: center;
-  padding: 22px;
+  padding-bottom: 22px;
   color: var(--muted);
+  border-top: 1px solid rgba(184, 134, 11, 0.25);
+  font-size: 13px;
 }
 
 @media (max-width: 900px) {
   .wrap {
-    padding: 14px;
+    padding: 16px;
   }
 
   .surface {
@@ -165,7 +182,11 @@ footer {
   }
 }
 
-@media (max-width: 560px) {
+@media (max-width: 600px) {
+  .wrap {
+    padding: 12px;
+  }
+
   .surface {
     padding: 14px;
     border-radius: 12px;
