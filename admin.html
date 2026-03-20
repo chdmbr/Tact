@@ -8,6 +8,7 @@
     :root {
       --bg: #f5f7f4;
       --card: #ffffff;
+      --card-soft: #f8fbf8;
       --green: #0a7a3a;
       --muted: #5c6760;
       --line: rgba(10, 20, 10, 0.1);
@@ -18,10 +19,11 @@
     body {
       margin: 0;
       background:
-        radial-gradient(700px 300px at 10% 0%, rgba(10, 122, 58, 0.08), transparent 50%),
-        var(--bg);
+        radial-gradient(700px 320px at 10% 0%, rgba(10, 122, 58, 0.06), transparent 55%),
+        linear-gradient(180deg, #f7faf7 0%, #f3f6f2 100%);
       color: #142019;
       padding: 16px;
+      min-height: 100vh;
     }
     .wrap {
       max-width: 720px;
@@ -35,6 +37,21 @@
       border-radius: var(--radius);
       padding: 14px;
       box-shadow: 0 12px 34px rgba(10, 20, 10, 0.06);
+    }
+    .card-primary {
+      border-color: rgba(10, 122, 58, 0.28);
+      box-shadow: 0 16px 38px rgba(10, 122, 58, 0.12);
+    }
+    .subcard {
+      margin-top: 14px;
+      padding: 12px;
+      border: 1px solid rgba(10, 20, 10, 0.08);
+      border-radius: 12px;
+      background: linear-gradient(180deg, var(--card-soft), #ffffff);
+      box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.65);
+    }
+    .pin-tools-row {
+      margin-top: 12px;
     }
     h1, h2 {
       margin: 0 0 8px;
@@ -108,8 +125,77 @@
     .mono { font-family: ui-monospace, SFMono-Regular, Menlo, Consolas, monospace; }
     .mini { font-size: 12px; color: var(--muted); margin: 0; }
     .section-title { margin-top: 8px; }
+    .section-kicker {
+      margin: 0 0 6px;
+      font-size: 11px;
+      letter-spacing: 0.12em;
+      text-transform: uppercase;
+      color: #557262;
+      font-weight: 700;
+    }
+    .subtle-title {
+      color: #335244;
+      font-size: 18px;
+      margin-bottom: 6px;
+    }
+    .manager-toolbar {
+      display: grid;
+      grid-template-columns: 1fr auto;
+      gap: 10px;
+      align-items: center;
+    }
+    .event-list {
+      display: grid;
+      gap: 10px;
+      margin-top: 12px;
+    }
+    .event-item {
+      display: grid;
+      grid-template-columns: 72px 1fr auto;
+      gap: 12px;
+      align-items: center;
+      padding: 10px;
+      border: 1px solid rgba(10, 20, 10, 0.08);
+      border-radius: 12px;
+      background: linear-gradient(180deg, #ffffff, var(--card-soft));
+    }
+    .event-item img {
+      width: 72px;
+      height: 72px;
+      object-fit: cover;
+      border-radius: 10px;
+      border: 1px solid rgba(10, 20, 10, 0.08);
+      background: #eef3ee;
+    }
+    .event-item h3 {
+      margin: 0 0 4px;
+      font-size: 16px;
+      color: #173125;
+    }
+    .event-meta {
+      margin: 0 0 4px;
+      font-size: 12px;
+      color: #5a6d62;
+    }
+    .event-slug {
+      margin: 0;
+      font-size: 12px;
+      color: #738278;
+    }
+    .danger {
+      background: linear-gradient(180deg, #bb3c2d, #9a2f22);
+      color: #fff;
+    }
+    .accent {
+      background: linear-gradient(180deg, #1e5aa8, #184886);
+      color: #fff;
+    }
+    .manager-toggle-row {
+      margin-bottom: 12px;
+    }
     @media (max-width: 680px) {
       .row-2, .btn-row { grid-template-columns: 1fr; }
+      .manager-toolbar, .event-item { grid-template-columns: 1fr; }
     }
   </style>
 </head>
@@ -120,7 +206,8 @@
       <p>Mobile form for updating events. Fill and submit. No code edits needed.</p>
     </section>
 
-    <section id="pin-card" class="card">
+    <section id="pin-card" class="card card-primary">
+      <p class="section-kicker">Start Here</p>
       <h2>PIN Access</h2>
       <p>Enter your admin PIN to unlock the event form.</p>
       <div class="grid">
@@ -132,29 +219,52 @@
       </div>
       <p id="pin-hint" class="status hidden">PIN accepted. Form unlocked.</p>
 
-      <h2 class="section-title">Set / Change PIN</h2>
-      <p class="mini" id="pin-mode-note">Checking PIN status...</p>
-      <div class="grid">
-        <div>
-          <label for="old-pin-input">Current PIN</label>
-          <input id="old-pin-input" type="password" inputmode="numeric" autocomplete="off" placeholder="Current PIN">
-        </div>
-        <div class="row-2">
-          <div>
-            <label for="new-pin-input">New PIN</label>
-            <input id="new-pin-input" type="password" inputmode="numeric" autocomplete="new-password" placeholder="At least 4 digits">
-          </div>
-          <div>
-            <label for="confirm-pin-input">Confirm New PIN</label>
-            <input id="confirm-pin-input" type="password" inputmode="numeric" autocomplete="new-password" placeholder="Repeat new PIN">
-          </div>
-        </div>
-        <button id="change-pin-btn" type="button" class="secondary">Save PIN</button>
+      <div class="pin-tools-row">
+        <button id="toggle-pin-tools-btn" type="button" class="secondary">Set / Change PIN</button>
       </div>
-      <p id="pin-change-status" class="status hidden"></p>
+
+      <div id="pin-tools-panel" class="subcard hidden">
+        <p class="section-kicker">Secondary</p>
+        <h2 class="subtle-title">Set / Change PIN</h2>
+        <p class="mini" id="pin-mode-note">Checking PIN status...</p>
+        <div class="grid">
+          <div>
+            <label for="old-pin-input">Current PIN</label>
+            <input id="old-pin-input" type="password" inputmode="numeric" autocomplete="off" placeholder="Current PIN">
+          </div>
+          <div class="row-2">
+            <div>
+              <label for="new-pin-input">New PIN</label>
+              <input id="new-pin-input" type="password" inputmode="numeric" autocomplete="new-password" placeholder="At least 4 digits">
+            </div>
+            <div>
+              <label for="confirm-pin-input">Confirm New PIN</label>
+              <input id="confirm-pin-input" type="password" inputmode="numeric" autocomplete="new-password" placeholder="Repeat new PIN">
+            </div>
+          </div>
+          <button id="change-pin-btn" type="button" class="secondary">Save PIN</button>
+        </div>
+        <p id="pin-change-status" class="status hidden"></p>
+      </div>
     </section>
 
     <section id="form-card" class="card hidden">
+      <div class="manager-toggle-row">
+        <button id="toggle-manage-btn" type="button" class="accent">Manage Existing Events</button>
+      </div>
+
+      <section id="manage-card" class="subcard hidden">
+        <div class="manager-toolbar">
+          <div>
+            <h2>Manage Existing Events</h2>
+            <p>Synced from GitHub. Delete removes the full event folder and rebuilds the feed.</p>
+          </div>
+          <button id="refresh-events-btn" type="button" class="secondary">Refresh List</button>
+        </div>
+        <div id="manage-status" class="status hidden"></div>
+        <div id="event-list" class="event-list"></div>
+      </section>
+
       <h2>Add / Update Event</h2>
       <p>Use this for both upcoming and completed events.</p>
 
@@ -169,9 +279,15 @@
             <label for="date">Date</label>
             <input id="date" name="date" type="date" required>
           </div>
-          <div>
-            <label for="time">Time</label>
-            <input id="time" name="time" placeholder="10:00 AM - 1:00 PM" required>
+          <div class="row-2">
+            <div>
+              <label for="time-from">From Time</label>
+              <input id="time-from" name="timeFrom" type="time" required>
+            </div>
+            <div>
+              <label for="time-to">To Time</label>
+              <input id="time-to" name="timeTo" type="time" required>
+            </div>
           </div>
         </div>
 
@@ -228,14 +344,21 @@
 
     const pinCard = document.getElementById("pin-card");
     const formCard = document.getElementById("form-card");
+    const manageCard = document.getElementById("manage-card");
     const pinInput = document.getElementById("pin-input");
     const pinHint = document.getElementById("pin-hint");
     const unlockBtn = document.getElementById("unlock-btn");
+    const togglePinToolsBtn = document.getElementById("toggle-pin-tools-btn");
+    const pinToolsPanel = document.getElementById("pin-tools-panel");
     const adminForm = document.getElementById("admin-form");
     const posterInput = document.getElementById("poster");
     const posterMeta = document.getElementById("poster-meta");
     const statusBox = document.getElementById("submit-status");
     const clearBtn = document.getElementById("clear-btn");
+    const toggleManageBtn = document.getElementById("toggle-manage-btn");
+    const refreshEventsBtn = document.getElementById("refresh-events-btn");
+    const manageStatus = document.getElementById("manage-status");
+    const eventList = document.getElementById("event-list");
     const oldPinInput = document.getElementById("old-pin-input");
     const newPinInput = document.getElementById("new-pin-input");
     const confirmPinInput = document.getElementById("confirm-pin-input");
@@ -248,6 +371,22 @@
     let pinConfigured = true;
 
     bootPinStatus();
+
+    togglePinToolsBtn.addEventListener("click", function () {
+      const willShow = pinToolsPanel.classList.contains("hidden");
+      pinToolsPanel.classList.toggle("hidden", !willShow);
+      togglePinToolsBtn.textContent = willShow ? "Hide PIN Settings" : "Set / Change PIN";
+    });
+
+    toggleManageBtn.addEventListener("click", function () {
+      const willShow = manageCard.classList.contains("hidden");
+      manageCard.classList.toggle("hidden", !willShow);
+      toggleManageBtn.textContent = willShow ? "Hide Existing Events" : "Manage Existing Events";
+      if (willShow) {
+        loadExistingEvents(false);
+        window.scrollTo({ top: document.body.scrollHeight, behavior: "smooth" });
+      }
+    });
 
     unlockBtn.addEventListener("click", async function () {
       const pin = (pinInput.value || "").trim();
@@ -272,6 +411,7 @@
 
         unlockedPin = pin;
         pinHint.classList.remove("hidden");
+        pinCard.classList.add("hidden");
         formCard.classList.remove("hidden");
         window.scrollTo({ top: document.body.scrollHeight, behavior: "smooth" });
       } catch (_err) {
@@ -317,15 +457,21 @@
         unlockedPin = newPin;
         pinInput.value = newPin;
         pinHint.classList.remove("hidden");
+        pinCard.classList.add("hidden");
         formCard.classList.remove("hidden");
         pinModeNote.textContent = "PIN is set. To change it, enter current PIN and new PIN.";
         oldPinInput.value = "";
         newPinInput.value = "";
         confirmPinInput.value = "";
         pinChangeStatus.textContent = "PIN saved successfully.";
+        loadExistingEvents(false);
       } finally {
         changePinBtn.disabled = false;
       }
+    });
+
+    refreshEventsBtn.addEventListener("click", function () {
+      loadExistingEvents(true);
     });
 
     posterInput.addEventListener("change", async function () {
@@ -370,13 +516,18 @@
 
       const title = valueOf("title");
       const date = valueOf("date");
+      const time = buildTimeRange();
+      if (!time) {
+        alert("Enter valid from and to times.");
+        return;
+      }
       const payload = {
         pin: unlockedPin,
         event: {
           slug: slugify(date + "--" + title),
           title: title,
           date: date,
-          time: valueOf("time"),
+          time: time,
           location: valueOf("location"),
           status: valueOf("status"),
           teaser: valueOf("teaser"),
@@ -387,7 +538,20 @@
 
       try {
         statusBox.classList.remove("hidden");
-        statusBox.textContent = "Submitting...";
+        statusBox.textContent = "Preparing event data...";
+        setSubmittingState(true);
+
+        window.setTimeout(function () {
+          if (statusBox.textContent === "Preparing event data...") {
+            statusBox.textContent = "Uploading poster and event details...";
+          }
+        }, 400);
+
+        window.setTimeout(function () {
+          if (statusBox.textContent === "Uploading poster and event details...") {
+            statusBox.textContent = "Publishing to GitHub. This can take a little longer for large posters...";
+          }
+        }, 1800);
 
         const response = await fetch(ADMIN_CONFIG.endpoint, {
           method: "POST",
@@ -409,9 +573,13 @@
           throw new Error(body.error || "Submit failed");
         }
 
-        statusBox.textContent = "Submitted successfully. GitHub publish requested.";
+        statusBox.textContent = "Submitted successfully. Refreshing form...";
+        window.setTimeout(function () {
+          window.location.reload();
+        }, 700);
       } catch (err) {
         statusBox.textContent = "Submit failed: " + (err && err.message ? err.message : "Unknown error");
+        setSubmittingState(false);
       }
     });
 
@@ -424,6 +592,49 @@
         .toLowerCase()
         .replace(/[^a-z0-9]+/g, "-")
         .replace(/^-+|-+$/g, "");
+    }
+
+    function buildTimeRange() {
+      const fromValue = valueOf("time-from");
+      const toValue = valueOf("time-to");
+      if (!fromValue || !toValue) return "";
+
+      const fromMinutes = toMinutes(fromValue);
+      const toMinutesValue = toMinutes(toValue);
+      if (fromMinutes === null || toMinutesValue === null || toMinutesValue <= fromMinutes) {
+        return "";
+      }
+
+      return formatTime(fromValue) + " - " + formatTime(toValue);
+    }
+
+    function toMinutes(value) {
+      const match = String(value || "").match(/^(\d{2}):(\d{2})$/);
+      if (!match) return null;
+      return Number(match[1]) * 60 + Number(match[2]);
+    }
+
+    function formatTime(value) {
+      const match = String(value || "").match(/^(\d{2}):(\d{2})$/);
+      if (!match) return value;
+
+      let hours = Number(match[1]);
+      const minutes = match[2];
+      const suffix = hours >= 12 ? "PM" : "AM";
+      hours = hours % 12 || 12;
+      return hours + ":" + minutes + " " + suffix;
+    }
+
+    function setSubmittingState(isSubmitting) {
+      unlockBtn.disabled = isSubmitting;
+      clearBtn.disabled = isSubmitting;
+      changePinBtn.disabled = isSubmitting;
+
+      const submitButton = adminForm.querySelector('button[type="submit"]');
+      if (submitButton) {
+        submitButton.disabled = isSubmitting;
+        submitButton.textContent = isSubmitting ? "Publishing..." : "Submit Event";
+      }
     }
 
     function readFileAsBase64(file) {
@@ -441,6 +652,143 @@
 
     function hasConfiguredEndpoint() {
       return !!ADMIN_CONFIG.endpoint;
+    }
+
+    function showManageStatus(text, isError) {
+      manageStatus.classList.remove("hidden");
+      manageStatus.textContent = text;
+      manageStatus.style.color = isError ? "#7f2017" : "";
+      manageStatus.style.borderColor = isError ? "rgba(187, 60, 45, 0.28)" : "";
+      manageStatus.style.background = isError ? "rgba(187, 60, 45, 0.08)" : "";
+    }
+
+    function clearManageStatus() {
+      manageStatus.classList.add("hidden");
+      manageStatus.textContent = "";
+      manageStatus.style.color = "";
+      manageStatus.style.borderColor = "";
+      manageStatus.style.background = "";
+    }
+
+    async function loadExistingEvents(showRefreshMessage) {
+      if (!unlockedPin || !hasConfiguredEndpoint()) return;
+
+      if (showRefreshMessage) {
+        showManageStatus("Refreshing events from GitHub...", false);
+      } else {
+        clearManageStatus();
+      }
+
+      refreshEventsBtn.disabled = true;
+      eventList.innerHTML = '<p class="mini">Loading events...</p>';
+
+      try {
+        const response = await fetch(ADMIN_CONFIG.endpoint, {
+          method: "POST",
+          headers: { "Content-Type": "text/plain;charset=utf-8" },
+          body: JSON.stringify({ action: "listEvents", pin: unlockedPin })
+        });
+        const body = await response.json();
+        if (!response.ok || !body || body.ok === false) {
+          throw new Error(body && body.error ? body.error : "Could not load events.");
+        }
+
+        renderEventList(Array.isArray(body.events) ? body.events : []);
+        if (showRefreshMessage) {
+          showManageStatus("Event list refreshed.", false);
+        }
+      } catch (err) {
+        eventList.innerHTML = "";
+        showManageStatus("Could not load events: " + (err && err.message ? err.message : "Unknown error"), true);
+      } finally {
+        refreshEventsBtn.disabled = false;
+      }
+    }
+
+    function renderEventList(events) {
+      eventList.innerHTML = "";
+
+      if (!events.length) {
+        eventList.innerHTML = '<p class="mini">No events found in GitHub.</p>';
+        return;
+      }
+
+      events.forEach(function (item) {
+        const article = document.createElement("article");
+        article.className = "event-item";
+
+        const poster = document.createElement("img");
+        poster.src = String(item.poster || "assets/images/tact-logo.jpg");
+        poster.alt = (item.title || "Event") + " poster";
+        poster.onerror = function () {
+          poster.onerror = null;
+          poster.src = "assets/images/tact-logo.jpg";
+        };
+
+        const details = document.createElement("div");
+        details.innerHTML =
+          "<h3>" + escapeHtml(item.title || "Untitled Event") + "</h3>" +
+          '<p class="event-meta">' +
+          escapeHtml(formatDisplayDate(item.date)) + " | " +
+          escapeHtml(item.time || "Time TBA") + " | " +
+          escapeHtml(item.location || "Location TBA") +
+          "</p>" +
+          '<p class="event-slug">' + escapeHtml(item.slug || "") + "</p>";
+
+        const removeBtn = document.createElement("button");
+        removeBtn.type = "button";
+        removeBtn.className = "danger";
+        removeBtn.textContent = "Delete";
+        removeBtn.addEventListener("click", function () {
+          handleDeleteEvent(item, removeBtn);
+        });
+
+        article.appendChild(poster);
+        article.appendChild(details);
+        article.appendChild(removeBtn);
+        eventList.appendChild(article);
+      });
+    }
+
+    async function handleDeleteEvent(item, button) {
+      const title = String((item && item.title) || "this event");
+      const slug = String((item && item.slug) || "");
+      if (!slug) return;
+
+      if (!window.confirm('Delete "' + title + '"? This removes the full event folder from GitHub.')) {
+        return;
+      }
+
+      const deletePin = window.prompt("Enter admin PIN to delete this event:");
+      if (deletePin === null) return;
+      if (!String(deletePin).trim()) {
+        alert("PIN is required to delete.");
+        return;
+      }
+
+      button.disabled = true;
+      showManageStatus('Deleting "' + title + '" from GitHub...', false);
+
+      try {
+        const response = await fetch(ADMIN_CONFIG.endpoint, {
+          method: "POST",
+          headers: { "Content-Type": "text/plain;charset=utf-8" },
+          body: JSON.stringify({ action: "deleteEvent", pin: String(deletePin).trim(), slug: slug })
+        });
+        const body = await response.json();
+        if (!response.ok || !body || body.ok === false) {
+          throw new Error(body && body.error ? body.error : "Delete failed.");
+        }
+
+        unlockedPin = String(deletePin).trim();
+        pinInput.value = unlockedPin;
+        showManageStatus('Deleted "' + title + '". Refreshing list...', false);
+        await loadExistingEvents(false);
+      } catch (err) {
+        showManageStatus("Delete failed: " + (err && err.message ? err.message : "Unknown error"), true);
+      } finally {
+        button.disabled = false;
+      }
     }
 
     async function verifyPin(pin) {
@@ -478,6 +826,8 @@
           oldPinInput.disabled = true;
           oldPinInput.placeholder = "Not needed for first-time setup";
           changePinBtn.textContent = "Set First PIN";
+          pinToolsPanel.classList.remove("hidden");
+          togglePinToolsBtn.textContent = "Hide PIN Settings";
         }
       } catch (_err) {
         pinModeNote.textContent = "Could not check PIN status. Try again after backend deploy.";
@@ -496,6 +846,25 @@
         return false;
       }
       return true;
+    }
+
+    function escapeHtml(value) {
+      return String(value || "")
+        .replace(/&/g, "&amp;")
+        .replace(/</g, "&lt;")
+        .replace(/>/g, "&gt;")
+        .replace(/"/g, "&quot;")
+        .replace(/'/g, "&#39;");
+    }
+
+    function formatDisplayDate(value) {
+      const date = new Date(String(value || "") + "T00:00:00");
+      if (isNaN(date.getTime())) return value || "";
+      return date.toLocaleDateString("en-IN", {
+        day: "numeric",
+        month: "short",
+        year: "numeric"
+      });
     }
   </script>
 </body>
