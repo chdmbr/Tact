@@ -245,13 +245,17 @@
 .nav-trigger::after {
   content: "";
   display: inline-block;
-  width: 8px;
-  height: 8px;
-  border-right: 2px solid rgba(184, 134, 11, 0.72);
-  border-bottom: 2px solid rgba(184, 134, 11, 0.72);
-  transform: translateY(-1px) rotate(45deg);
+  border: 0 !important;
+  border-left: 0 !important;
+  border-right: 0 !important;
+  border-top: 0 !important;
+  border-bottom: 0 !important;
+  width: 10px;
+  height: 6px;
+  background: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='10' height='6' viewBox='0 0 10 6'%3E%3Cpath d='M1 1l4 4 4-4' fill='none' stroke='%23b8860b' stroke-opacity='.78' stroke-width='1.5' stroke-linecap='round' stroke-linejoin='round'/%3E%3C/svg%3E") center / 10px 6px no-repeat;
+  transform: translateY(1px) rotate(0deg);
   transform-origin: center;
-  transition: transform 0.15s ease, border-color 0.15s ease;
+  transition: transform 0.15s ease;
 }
 
 .nav-link--primary::after {
@@ -271,7 +275,7 @@
 
 .nav-item--open > .nav-trigger::after,
 .nav-trigger[aria-expanded="true"]::after {
-  transform: translateY(1px) rotate(-135deg);
+  transform: translateY(0) rotate(180deg);
 }
 
 .nav-trigger:focus-visible {
