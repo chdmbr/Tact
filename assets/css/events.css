@@ -75,7 +75,7 @@ h3 {
 
 .event-grid {
   display: grid;
-  grid-template-columns: repeat(auto-fit, minmax(520px, 1fr));
+  grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
   gap: 14px;
   min-height: 398px;
 }
@@ -90,6 +90,7 @@ h3 {
   border: 1px solid rgba(10, 20, 10, 0.08);
   border-radius: 14px;
   background: #fff;
+  width: 100%;
 }
 
 .event-card-placeholder {
@@ -144,7 +145,7 @@ h3 {
 
 .archive-scroll {
   display: grid;
-  grid-template-columns: repeat(auto-fit, minmax(520px, 1fr));
+  grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
   gap: 14px;
   min-height: 192px;
   max-height: 560px;
