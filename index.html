@@ -195,10 +195,12 @@
         display: grid;
         grid-template-columns: 1.2fr 1fr;
         gap: 10px;
+        align-items: start;
       }
 
       .home-events-pane {
         min-width: 0;
+        align-self: start;
         background: linear-gradient(180deg, rgba(255, 255, 255, 0.84), rgba(255, 255, 255, 0.94));
         border: 1px solid rgba(10, 20, 10, 0.08);
         border-radius: 12px;
@@ -1275,7 +1277,10 @@
                 }
               });
             },
-            { threshold: 0.2 }
+            {
+              threshold: 0.01,
+              rootMargin: "0px 0px 160px 0px"
+            }
           );
 
           sections.forEach(function (section) {
