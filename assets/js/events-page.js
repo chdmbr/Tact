@@ -1,5 +1,5 @@
 async function initEventsPage() {
-  setEventsPageLoading(true);
+  renderPlaceholders();
 
   var initialEvents = [];
   if (typeof window.getTactEventFeedSnapshot === "function") {
@@ -52,6 +52,30 @@ function scheduleAsync(callback) {
   }
 
   window.setTimeout(callback, 0);
+}
+
+function renderPlaceholders() {
+  populatePlaceholderCards("upcoming-list", 4);
+  populatePlaceholderCards("archive-list", 2);
+}
+
+function populatePlaceholderCards(rootId, count) {
+  var root = document.getElementById(rootId);
+  if (!root) return;
+  root.innerHTML = "";
+  for (var i = 0; i < count; i++) {
+    root.insertAdjacentHTML(
+      "beforeend",
+      '<article class="event-card event-card-placeholder" aria-hidden="true">' +
+        '<div class="event-card-placeholder__image"></div>' +
+        '<div class="event-card-placeholder__body">' +
+          '<span class="event-card-placeholder__line" style="width:70%;"></span>' +
+          '<span class="event-card-placeholder__line" style="width:60%;"></span>' +
+          '<span class="event-card-placeholder__line" style="width:40%;"></span>' +
+        "</div>" +
+      "</article>"
+    );
+  }
 }
 
 if (document.getElementById("upcoming-list") && document.getElementById("archive-list")) {
@@ -251,9 +275,4 @@ function escapeHtml(value) {
     .replace(/>/g, "&gt;")
     .replace(/\"/g, "&quot;")
     .replace(/'/g, "&#39;");
-}
-
-function setEventsPageLoading(isLoading) {
-  if (!document.body) return;
-  document.body.classList.toggle("events-page--loading", isLoading);
 }
