@@ -7,6 +7,7 @@
   <meta name="description" content="Support The Academy Trust (tAcT) and help strengthen science outreach, fellowships, and education across India.">
   <link rel="icon" href="assets/images/tact-favicon.png" type="image/png">
   <link rel="stylesheet" href="shared-ribbon.css">
+  <link rel="stylesheet" href="assets/css/public-site.css">
   <style>
     :root {
       --bg: #fdfdfc;
@@ -36,7 +37,7 @@
     }
 
     .wrap {
-      max-width: 1200px;
+      max-width: var(--site-wrap-max);
       margin: 0 auto;
       padding: 20px;
     }
@@ -473,13 +474,7 @@
       </section>
     </main>
 
-    <footer>
-      <p>
-        For queries about donations, please write to
-        <a href="mailto:trust@ias.ac.in?subject=Donation%20to%20The%20Academy%20Trust">trust@ias.ac.in</a>.
-      </p>
-      <p>&copy; 2025 The Academy Trust (tAcT). All rights reserved.</p>
-    </footer>
+    <div id="site-footer-root"></div>
   </div>
 
   <script src="assets/js/site-chrome.js?v=20260321"></script>

@@ -24,7 +24,7 @@ body {
 }
 
 .wrap {
-  max-width: 1200px;
+  max-width: var(--site-wrap-max);
   margin: 0 auto;
   padding: 20px;
 }

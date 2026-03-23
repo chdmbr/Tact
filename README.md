@@ -9,6 +9,7 @@ Tact is a static site for The Academy Trust with a GitHub-backed admin workflow 
 - A standalone image gallery page at `gallery.html`
 - A calendar view for gallery content at `calendar.html`
 - Shared site navigation through `assets/js/site-chrome.js`
+- Shared public-site typography, spacing, cards, buttons, and footer through `assets/css/public-site.css`
 - Client-side route handling through `assets/js/page-router.js`
 
 ## Admin workflow
@@ -148,8 +149,11 @@ For gallery publishing, the backend:
 
 Shared navigation and routing were updated so the new pages behave like the existing site.
 
+- [assets/css/public-site.css](/home/chi/Tact/assets/css/public-site.css)
+  - Centralizes public-page typography, spacing, card, button, wrap, and footer rules
 - [assets/js/site-chrome.js](/home/chi/Tact/assets/js/site-chrome.js)
   - Adds `Gallery` and `Calendar` links under `Events & Media`
+  - Renders the shared ribbon header and shared footer
 - [assets/js/page-router.js](/home/chi/Tact/assets/js/page-router.js)
   - Registers `gallery.html` and `calendar.html`
   - Loads the right scripts for those routes
@@ -168,6 +172,7 @@ If gallery save fails with a GitHub bandwidth / transfer quota error, the admin 
   - `admin.html`
   - `gallery.html`
   - `calendar.html`
+  - shared public styles and shared chrome/footer behavior
   - Apps Script backend actions
   - storage paths and deployment notes
 

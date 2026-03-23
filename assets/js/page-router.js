@@ -130,6 +130,13 @@
     var currentFooter = document.querySelector(".wrap > footer");
     if (nextFooter && currentFooter) {
       currentFooter.replaceWith(nextFooter.cloneNode(true));
+      return;
+    }
+
+    var nextFooterRoot = doc.getElementById("site-footer-root");
+    var currentFooterRoot = document.getElementById("site-footer-root");
+    if (nextFooterRoot && currentFooterRoot) {
+      currentFooterRoot.replaceWith(nextFooterRoot.cloneNode(true));
     }
   }
 
@@ -172,6 +179,11 @@
         window.TACT_CHROME.ensureHeader();
       } else {
         window.TACT_CHROME.renderHeader();
+      }
+      if (typeof window.TACT_CHROME.ensureFooter === "function") {
+        window.TACT_CHROME.ensureFooter();
+      } else if (typeof window.TACT_CHROME.renderFooter === "function") {
+        window.TACT_CHROME.renderFooter();
       }
       window.TACT_CHROME.initDropdowns();
     }

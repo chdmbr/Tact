@@ -86,11 +86,30 @@
     syncHeaderOffset();
   }
 
+  function renderSiteFooter() {
+    var root = document.getElementById("site-footer-root");
+    if (!root) return;
+
+    root.innerHTML = [
+      '<footer class="site-footer" aria-label="Site footer">',
+      "  <p>&copy; 2026 Academic Trust Science Outreach</p>",
+      "</footer>"
+    ].join("");
+  }
+
   function ensureHeader() {
     var root = document.getElementById("site-header-root");
+    if (root && !root.querySelector(".site-header")) {
+      renderSiteHeader();
+    }
+    ensureFooter();
+  }
+
+  function ensureFooter() {
+    var root = document.getElementById("site-footer-root");
     if (!root) return;
-    if (root.querySelector(".site-header")) return;
-    renderSiteHeader();
+    if (root.querySelector(".site-footer")) return;
+    renderSiteFooter();
   }
 
   function initDropdowns() {
@@ -140,7 +159,9 @@
 
   window.TACT_CHROME = {
     ensureHeader: ensureHeader,
+    ensureFooter: ensureFooter,
     renderHeader: renderSiteHeader,
+    renderFooter: renderSiteFooter,
     initDropdowns: initDropdowns,
     syncHeaderOffset: syncHeaderOffset
   };

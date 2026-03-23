@@ -29,7 +29,7 @@ body.modal-open {
 }
 
 .wrap {
-  max-width: 1240px;
+  max-width: var(--site-wrap-max);
   margin: 0 auto;
   padding: 20px;
 }
