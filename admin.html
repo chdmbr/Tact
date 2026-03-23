@@ -335,7 +335,7 @@
 
     <section id="form-card" class="card hidden">
       <div class="view-switch">
-        <button id="show-event-panel-btn" type="button" class="secondary" data-active="true">Add / Update Event</button>
+        <button id="show-event-panel-btn" type="button" class="secondary" data-active="true">Add Event</button>
         <button id="show-gallery-panel-btn" type="button" class="secondary" data-active="false">Add Gallery</button>
       </div>
 
@@ -357,8 +357,8 @@
         </section>
 
         <div class="panel-head">
-          <h2>Add / Update Event</h2>
-          <p>Use this for both upcoming and completed events.</p>
+          <h2>Add Event</h2>
+          <p>Use this to publish event details and the poster image.</p>
         </div>
 
         <form id="admin-form" class="grid">
@@ -399,13 +399,8 @@
           </div>
 
           <div>
-            <label for="teaser">Short Summary</label>
-            <textarea id="teaser" name="teaser" placeholder="One-line summary"></textarea>
-          </div>
-
-          <div>
-            <label for="homepageMatter">Homepage Text</label>
-            <textarea id="homepageMatter" name="homepageMatter" placeholder="2-3 lines for homepage card"></textarea>
+            <label for="homepageMatter">Description</label>
+            <textarea id="homepageMatter" name="homepageMatter" placeholder="Event description"></textarea>
           </div>
 
           <div>
@@ -449,10 +444,10 @@
           <div class="subcard">
             <div class="gallery-block-head">
               <strong>Gallery Images</strong>
-              <button id="add-gallery-image-btn" type="button" class="secondary">+ Add More Images</button>
             </div>
             <p class="mini">At least one image is required. Every image needs a description.</p>
             <div id="gallery-image-list" class="gallery-list"></div>
+            <button id="add-gallery-image-btn" type="button" class="secondary">+ Add More Images</button>
           </div>
 
           <div class="btn-row">
@@ -540,6 +535,11 @@
     const clearGalleryBtn = document.getElementById("clear-gallery-btn");
     const gallerySubmitBtn = document.getElementById("gallery-submit-btn");
 
+    const STORAGE_KEYS = {
+      event: "tact-admin-event-draft-v1",
+      gallery: "tact-admin-gallery-draft-v1"
+    };
+
     let unlockedPin = "";
     let posterPayload = null;
     let pinConfigured = true;
@@ -547,6 +547,8 @@
 
     bootPinStatus();
     ensureGalleryBlocks();
+    restoreDrafts();
+    bindDraftAutosave();
 
     togglePinToolsBtn.addEventListener("click", function () {
       const willShow = pinToolsPanel.classList.contains("hidden");
@@ -667,6 +669,7 @@
       if (!file) {
         posterPayload = null;
         posterMeta.textContent = "";
+        persistEventDraft();
         return;
       }
 
@@ -678,24 +681,20 @@
       });
       posterPayload = prepared.payload;
       posterMeta.textContent = buildPreparedFileLabel(file, prepared);
+      persistEventDraft();
     });
 
     clearBtn.addEventListener("click", function () {
-      adminForm.reset();
-      posterPayload = null;
-      posterMeta.textContent = "";
-      hideStatus(statusBox);
+      resetEventForm(true);
     });
 
     addGalleryImageBtn.addEventListener("click", function () {
       addGalleryBlock();
+      persistGalleryDraft();
     });
 
     clearGalleryBtn.addEventListener("click", function () {
-      galleryForm.reset();
-      galleryList.innerHTML = "";
-      ensureGalleryBlocks();
-      hideStatus(galleryStatus);
+      resetGalleryForm(true);
     });
 
     adminForm.addEventListener("submit", async function (event) {
@@ -730,7 +729,7 @@
           time: time,
           location: valueOf("location"),
           status: valueOf("status"),
-          teaser: valueOf("teaser"),
+          teaser: "",
           homepageMatter: valueOf("homepageMatter")
         },
         poster: posterPayload
@@ -757,10 +756,8 @@
           throw new Error(body.error || "Submit failed");
         }
 
-        statusBox.textContent = "Submitted successfully. Refreshing form...";
-        window.setTimeout(function () {
-          window.location.reload();
-        }, 700);
+        resetEventForm(true);
+        showStatus(statusBox, "Submitted successfully. Form cleared for a fresh entry.");
       } catch (err) {
         showStatus(statusBox, "Submit failed: " + (err && err.message ? err.message : "Unknown error"), true);
       } finally {
@@ -821,9 +818,8 @@
         }
 
         showStatus(galleryStatus, "Gallery saved successfully. The data file and image folder were updated.");
-        galleryForm.reset();
-        galleryList.innerHTML = "";
-        ensureGalleryBlocks();
+        resetGalleryForm(true);
+        showStatus(galleryStatus, "Gallery saved successfully. Form cleared for a fresh entry.");
       } catch (err) {
         const rawMessage = err && err.message ? err.message : "Unknown error";
         const hint = rawMessage === "Missing required event fields."
@@ -889,12 +885,13 @@
     function ensureGalleryBlocks() {
       if (galleryList.children.length) {
         renumberGalleryBlocks();
+        placeAddGalleryButton();
         return;
       }
       addGalleryBlock();
     }
 
-    function addGalleryBlock() {
+    function addGalleryBlock(initialState) {
       const fragment = galleryBlockTemplate.content.cloneNode(true);
       const block = fragment.querySelector(".gallery-block");
       const fileInput = block.querySelector("[data-gallery-file]");
@@ -904,6 +901,15 @@
       const removeBtn = block.querySelector("[data-remove-gallery-block]");
 
       block._payload = null;
+
+      if (initialState) {
+        descriptionInput.value = initialState.description || "";
+        if (initialState.payload && initialState.payload.data) {
+          block._payload = initialState.payload;
+          meta.textContent = buildRestoredFileLabel(initialState.payload);
+          renderRestoredPreview(preview, initialState.payload);
+        }
+      }
 
       fileInput.addEventListener("change", async function () {
         const file = fileInput.files && fileInput.files[0];
@@ -930,10 +936,12 @@
           URL.revokeObjectURL(img.src);
         };
         preview.appendChild(img);
+        persistGalleryDraft();
       });
 
       descriptionInput.addEventListener("input", function () {
         hideStatus(galleryStatus);
+        persistGalleryDraft();
       });
 
       removeBtn.addEventListener("click", function () {
@@ -943,14 +951,19 @@
           block._payload = null;
           meta.textContent = "";
           preview.innerHTML = "<span>Preview appears here before upload.</span>";
+          placeAddGalleryButton();
+          persistGalleryDraft();
           return;
         }
         block.remove();
         renumberGalleryBlocks();
+        placeAddGalleryButton();
+        persistGalleryDraft();
       });
 
       galleryList.appendChild(block);
       renumberGalleryBlocks();
+      placeAddGalleryButton();
     }
 
     function renumberGalleryBlocks() {
@@ -960,6 +973,150 @@
           indexNode.textContent = String(index + 1);
         }
       });
+    }
+
+    function placeAddGalleryButton() {
+      const parent = addGalleryImageBtn.parentElement;
+      if (!parent) return;
+      parent.appendChild(addGalleryImageBtn);
+    }
+
+    function renderRestoredPreview(previewNode, payload) {
+      previewNode.innerHTML = "";
+      const img = document.createElement("img");
+      img.src = "data:" + String(payload.mime || "image/jpeg") + ";base64," + String(payload.data || "");
+      img.alt = String(payload.name || "Restored draft image");
+      previewNode.appendChild(img);
+    }
+
+    function bindDraftAutosave() {
+      adminForm.addEventListener("input", persistEventDraft);
+      adminForm.addEventListener("change", persistEventDraft);
+      galleryForm.addEventListener("input", persistGalleryDraft);
+      galleryForm.addEventListener("change", persistGalleryDraft);
+    }
+
+    function resetEventForm(clearDraft) {
+      adminForm.reset();
+      posterPayload = null;
+      posterMeta.textContent = "";
+      if (clearDraft) {
+        removeStoredDraft(STORAGE_KEYS.event);
+      }
+      hideStatus(statusBox);
+    }
+
+    function resetGalleryForm(clearDraft) {
+      galleryForm.reset();
+      galleryList.innerHTML = "";
+      ensureGalleryBlocks();
+      if (clearDraft) {
+        removeStoredDraft(STORAGE_KEYS.gallery);
+      }
+      hideStatus(galleryStatus);
+    }
+
+    function persistEventDraft() {
+      saveDraft(STORAGE_KEYS.event, {
+        values: {
+          title: valueOf("title"),
+          date: valueOf("date"),
+          timeFrom: valueOf("time-from"),
+          timeTo: valueOf("time-to"),
+          location: valueOf("location"),
+          status: valueOf("status"),
+          homepageMatter: valueOf("homepageMatter")
+        },
+        poster: posterPayload
+      });
+    }
+
+    function persistGalleryDraft() {
+      const blocks = Array.from(galleryList.querySelectorAll(".gallery-block")).map(function (block) {
+        return {
+          description: String((block.querySelector("[data-gallery-description]").value || "")).trim(),
+          payload: block._payload || null
+        };
+      });
+
+      saveDraft(STORAGE_KEYS.gallery, {
+        values: {
+          title: valueOf("gallery-title"),
+          date: valueOf("gallery-date"),
+          location: valueOf("gallery-location")
+        },
+        blocks: blocks
+      });
+    }
+
+    function restoreDrafts() {
+      restoreEventDraft();
+      restoreGalleryDraft();
+    }
+
+    function restoreEventDraft() {
+      const draft = readDraft(STORAGE_KEYS.event);
+      if (!draft || !draft.values) return;
+
+      setValue("title", draft.values.title);
+      setValue("date", draft.values.date);
+      setValue("time-from", draft.values.timeFrom);
+      setValue("time-to", draft.values.timeTo);
+      setValue("location", draft.values.location);
+      setValue("status", draft.values.status || "scheduled");
+      setValue("homepageMatter", draft.values.homepageMatter);
+
+      if (draft.poster && draft.poster.data) {
+        posterPayload = draft.poster;
+        posterMeta.textContent = buildRestoredFileLabel(draft.poster);
+      }
+    }
+
+    function restoreGalleryDraft() {
+      const draft = readDraft(STORAGE_KEYS.gallery);
+      if (!draft || !draft.values) return;
+
+      setValue("gallery-title", draft.values.title);
+      setValue("gallery-date", draft.values.date);
+      setValue("gallery-location", draft.values.location);
+
+      galleryList.innerHTML = "";
+      const blocks = Array.isArray(draft.blocks) && draft.blocks.length ? draft.blocks : [{ description: "", payload: null }];
+      blocks.forEach(function (item) {
+        addGalleryBlock(item);
+      });
+      renumberGalleryBlocks();
+      placeAddGalleryButton();
+    }
+
+    function setValue(id, value) {
+      const node = document.getElementById(id);
+      if (node) node.value = value || "";
+    }
+
+    function saveDraft(key, value) {
+      try {
+        window.localStorage.setItem(key, JSON.stringify(value || {}));
+      } catch (_err) {
+        // Ignore storage failures.
+      }
+    }
+
+    function readDraft(key) {
+      try {
+        const raw = window.localStorage.getItem(key);
+        return raw ? JSON.parse(raw) : null;
+      } catch (_err) {
+        return null;
+      }
+    }
+
+    function removeStoredDraft(key) {
+      try {
+        window.localStorage.removeItem(key);
+      } catch (_err) {
+        // Ignore storage failures.
+      }
     }
 
     function collectGalleryImages() {
@@ -1183,6 +1340,19 @@
 
       const nextSize = Math.round(Number(prepared.size || 0) / 1024);
       return "Selected: " + originalFile.name + " (" + originalSize + " KB) -> balanced upload (" + nextSize + " KB)";
+    }
+
+    function buildRestoredFileLabel(payload) {
+      const bytes = estimateBase64Bytes(String((payload && payload.data) || ""));
+      const size = Math.round(bytes / 1024);
+      return "Recovered draft image: " + String((payload && payload.name) || "image.jpg") + " (" + size + " KB)";
+    }
+
+    function estimateBase64Bytes(value) {
+      const clean = String(value || "").replace(/\s+/g, "");
+      if (!clean) return 0;
+      const padding = clean.endsWith("==") ? 2 : clean.endsWith("=") ? 1 : 0;
+      return Math.max(0, Math.floor((clean.length * 3) / 4) - padding);
     }
 
     function hasConfiguredEndpoint() {

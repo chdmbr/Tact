@@ -26,11 +26,13 @@ The admin interface lives in [admin.html](/home/chi/Tact/admin.html).
 
 The existing event flow is still supported.
 
-- Title, date, time range, location, status, summary, homepage text, and poster image are entered in the event form
+- Title, date, time range, location, status, description, and poster image are entered in the event form
 - The form submits to the Apps Script endpoint configured in [assets/js/events-config.js](/home/chi/Tact/assets/js/events-config.js)
 - The backend writes event content into `content/events/<slug>/`
 - The backend rebuilds `content/events/events-feed.js`
 - `Manage Existing Events` shows current GitHub-backed event entries and allows deletion
+- Successful saves clear the form and remove the saved local draft
+- Unsaved event draft data is stored locally and restored when the page is reopened
 
 ### Gallery publishing
 
@@ -52,6 +54,8 @@ The same admin page now includes a second mode: `Add Gallery`.
   - resizes large images progressively
   - lowers quality only as much as needed
   - aims to avoid GitHub/API upload failures while keeping acceptable clarity
+- Successful saves clear the form and remove the saved local draft
+- Unsaved gallery draft data is stored locally and restored when the page is reopened
 
 Gallery submissions use this structure:
 

@@ -166,4 +166,15 @@
   };
 
   window.addEventListener("resize", syncHeaderOffset);
+
+  function bootChrome() {
+    ensureHeader();
+    initDropdowns();
+  }
+
+  if (document.readyState === "loading") {
+    document.addEventListener("DOMContentLoaded", bootChrome, { once: true });
+  } else {
+    bootChrome();
+  }
 })();
