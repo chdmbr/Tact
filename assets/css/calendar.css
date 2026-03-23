@@ -231,6 +231,11 @@ main {
   padding: 18px;
 }
 
+#calendar-detail-modal .calendar-modal-dialog {
+  padding: 0;
+  overflow: hidden;
+}
+
 .calendar-modal-header {
   display: flex;
   align-items: center;
@@ -305,6 +310,13 @@ main {
   max-height: 76vh;
   align-items: start;
   --calendar-detail-media-height: auto;
+}
+
+.calendar-detail-close {
+  position: absolute;
+  top: 14px;
+  right: 14px;
+  z-index: 2;
 }
 
 .calendar-detail-media {
