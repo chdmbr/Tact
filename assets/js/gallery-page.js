@@ -1,6 +1,7 @@
 (function () {
   var state = {
     items: [],
+    itemsById: {},
     rendered: 0,
     batchSize: 12,
     observer: null,
@@ -73,6 +74,7 @@
     button.type = "button";
     button.className = "gallery-card";
     button.setAttribute("aria-label", item.title + " on " + formatDate(item.date));
+    button.dataset.itemId = item.id;
 
     var image = document.createElement("img");
     image.className = "gallery-card-image";
@@ -91,9 +93,6 @@
 
     button.appendChild(image);
     button.appendChild(overlay);
-    button.addEventListener("click", function () {
-      openModal(item);
-    });
     return button;
   }
 
@@ -159,11 +158,26 @@
 
     var entries = await window.loadTactGalleryData();
     state.items = flattenEntries(entries);
+    state.itemsById = {};
+    state.items.forEach(function (item) {
+      state.itemsById[item.id] = item;
+    });
     state.rendered = 0;
 
     var grid = document.getElementById("gallery-grid");
     if (grid) {
       grid.innerHTML = "";
+      if (!grid.dataset.bound) {
+        grid.dataset.bound = "true";
+        grid.addEventListener("click", function (event) {
+          var card = event.target.closest(".gallery-card");
+          if (!card) return;
+          var item = state.itemsById[String(card.dataset.itemId || "")];
+          if (item) {
+            openModal(item);
+          }
+        });
+      }
     }
 
     renderNextBatch();

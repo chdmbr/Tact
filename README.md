@@ -1,31 +1,177 @@
 # Tact
 
-Tact is a static site with an admin form for publishing events.
+Tact is a static site for The Academy Trust with a GitHub-backed admin workflow for publishing events and gallery content.
 
-## Admin publishing flow
+## What the site now includes
 
-- `admin.html` submits event data to a Google Apps Script web app
-- Apps Script verifies the admin PIN
-- Apps Script writes event files directly to the GitHub repo under `content/events`
-- The site reads the generated event content and `content/events/events-feed.js`
+- Event publishing through `admin.html`
+- Gallery publishing through `admin.html`
+- A standalone image gallery page at `gallery.html`
+- A calendar view for gallery content at `calendar.html`
+- Shared site navigation through `assets/js/site-chrome.js`
+- Client-side route handling through `assets/js/page-router.js`
 
-## Admin page behavior
+## Admin workflow
 
-- Unlocking can be done with the `Unlock Form` button or by pressing `Enter` in the PIN field
-- Event time is entered with separate `From Time` and `To Time` fields
-- After a successful submit, the page refreshes so the form is cleared
-- `Manage Existing Events` loads the current GitHub event list with poster preview and delete controls
-- Delete uses the already unlocked PIN session and asks for confirmation before removing the event folder
+The admin interface lives in [admin.html](/home/chi/Tact/admin.html).
 
-## Current backend setup
+### PIN access
 
-The active backend is GitHub-based.
-Google Drive and Google Sheets are not used in the current publishing flow.
+- The admin page is locked behind a PIN
+- PIN verification and PIN changes are handled by the Google Apps Script backend
+- The unlocked PIN session is reused for event publishing, gallery publishing, and event deletion
 
-Setup guide:
+### Event publishing
 
-- [ADMIN-SETUP.md](/home/chi/Tact/ADMIN-SETUP.md)
+The existing event flow is still supported.
 
-Apps Script source:
+- Title, date, time range, location, status, summary, homepage text, and poster image are entered in the event form
+- The form submits to the Apps Script endpoint configured in [assets/js/events-config.js](/home/chi/Tact/assets/js/events-config.js)
+- The backend writes event content into `content/events/<slug>/`
+- The backend rebuilds `content/events/events-feed.js`
+- `Manage Existing Events` shows current GitHub-backed event entries and allows deletion
+
+### Gallery publishing
+
+The same admin page now includes a second mode: `Add Gallery`.
+
+- Common fields:
+  - Title
+  - Date
+  - Location
+- Dynamic gallery blocks:
+  - Image upload
+  - Description
+  - Preview before upload
+  - Remove button per block
+- At least one image is required
+- Every image requires a description
+- Large raster images are compressed in the browser before upload to reduce GitHub/API transfer failures
+
+Gallery submissions use this structure:
+
+```json
+{
+  "title": "Event Title",
+  "date": "2026-04-05",
+  "location": "Bangalore",
+  "images": [
+    {
+      "url": "images/gallery/example-01.jpg",
+      "description": "desc1"
+    },
+    {
+      "url": "images/gallery/example-02.jpg",
+      "description": "desc2"
+    }
+  ]
+}
+```
+
+Published gallery data is stored in:
+
+- [data/gallery.json](/home/chi/Tact/data/gallery.json)
+
+Published gallery images are stored in:
+
+- `images/gallery/`
+
+## Gallery page
+
+The gallery frontend lives in [gallery.html](/home/chi/Tact/gallery.html).
+
+Supporting files:
+
+- [assets/css/gallery.css](/home/chi/Tact/assets/css/gallery.css)
+- [assets/js/gallery-data.js](/home/chi/Tact/assets/js/gallery-data.js)
+- [assets/js/gallery-page.js](/home/chi/Tact/assets/js/gallery-page.js)
+
+Behavior:
+
+- Reuses the shared site header and footer styling
+- Reads gallery data from `data/gallery.json`
+- Flattens gallery entries into an image-only responsive grid
+- Loads the first batch, then loads more images on scroll using `IntersectionObserver`
+- Shows hover overlays with title, date, location, and short description
+- Opens a large in-page modal with full image and full metadata
+- Uses lazy-loaded images and in-page modals without URL changes
+
+## Calendar page
+
+The calendar frontend lives in [calendar.html](/home/chi/Tact/calendar.html).
+
+Supporting files:
+
+- [assets/css/calendar.css](/home/chi/Tact/assets/css/calendar.css)
+- [assets/js/gallery-data.js](/home/chi/Tact/assets/js/gallery-data.js)
+- [assets/js/calendar-page.js](/home/chi/Tact/assets/js/calendar-page.js)
+
+Behavior:
+
+- Reuses the shared site header and footer styling
+- Reads the same gallery data source as `gallery.html`
+- Renders a month grid with previous/next month controls
+- Groups gallery images by date
+- Shows rotating image previews inside date cells when that date has gallery images
+- Shows hover overlays with title, date, location, and short description
+- Opens a first modal with all images for the selected date
+- Opens a second modal with the selected full-size image and full metadata
+- Keeps all navigation inside the current page without URL changes
+
+## Backend
+
+The current backend is a Google Apps Script web app that writes directly to GitHub.
+
+Source:
 
 - [backend/google-apps-script/Code.gs](/home/chi/Tact/backend/google-apps-script/Code.gs)
+
+The backend now supports:
+
+- `pinStatus`
+- `verifyPin`
+- `changePin`
+- `listEvents`
+- `deleteEvent`
+- event publishing
+- `listGallery`
+- `saveGallery`
+
+For gallery publishing, the backend:
+
+- validates title, date, location, and images
+- uploads gallery image files into `images/gallery/`
+- updates `data/gallery.json`
+- replaces older files for the same gallery slug when a gallery is re-saved
+
+## Shared frontend wiring
+
+Shared navigation and routing were updated so the new pages behave like the existing site.
+
+- [assets/js/site-chrome.js](/home/chi/Tact/assets/js/site-chrome.js)
+  - Adds `Gallery` and `Calendar` links under `Events & Media`
+- [assets/js/page-router.js](/home/chi/Tact/assets/js/page-router.js)
+  - Registers `gallery.html` and `calendar.html`
+  - Loads the right scripts for those routes
+  - Runs the correct page initializer on route changes
+
+## Deployment notes
+
+If gallery save fails with `Missing required event fields.`, the live Apps Script deployment is still using the old event-only code. Redeploy [backend/google-apps-script/Code.gs](/home/chi/Tact/backend/google-apps-script/Code.gs).
+
+If gallery save fails with a GitHub bandwidth / transfer quota error, the admin page now compresses large raster images before upload, but very large source files may still require smaller uploads.
+
+## Maintenance
+
+- When adding or refining major site behavior, pages, admin flows, or backend actions, update this `README.md` in the same change.
+- Keep the README aligned with the current live architecture for:
+  - `admin.html`
+  - `gallery.html`
+  - `calendar.html`
+  - Apps Script backend actions
+  - storage paths and deployment notes
+
+## Setup references
+
+- [ADMIN-SETUP.md](/home/chi/Tact/ADMIN-SETUP.md)
+- [DEPLOYMENT.md](/home/chi/Tact/DEPLOYMENT.md)
