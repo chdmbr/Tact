@@ -1,4 +1,4 @@
-const CACHE_NAME = 'tact-v2';
+const CACHE_NAME = 'tact-v3';
 const urlsToCache = [
   '/',
   '/index.html',
@@ -22,6 +22,7 @@ self.addEventListener('install', event => {
         return cache.addAll(urlsToCache);
       })
   );
+  self.skipWaiting();
 });
 
 function shouldUseNetworkFirst(request) {
@@ -30,7 +31,15 @@ function shouldUseNetworkFirst(request) {
   }
 
   const url = new URL(request.url);
-  return url.origin === self.location.origin && url.pathname.endsWith('/content/events/events-feed.js');
+  if (url.origin !== self.location.origin) {
+    return false;
+  }
+
+  return (
+    url.pathname.endsWith('/content/events/events-feed.js') ||
+    url.pathname.endsWith('/data/gallery.json') ||
+    /\.(?:js|css|html|json)$/i.test(url.pathname)
+  );
 }
 
 // Fetch event - prefer network for pages and event feed, cache-first elsewhere
@@ -97,6 +106,6 @@ self.addEventListener('activate', event => {
           }
         })
       );
-    })
+    }).then(() => self.clients.claim())
   );
 });

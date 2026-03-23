@@ -167,6 +167,10 @@ Shared navigation and routing were updated so the new pages behave like the exis
   - Loads the right scripts for those routes
   - Runs the correct page initializer on route changes
   - Uses versioned gallery/calendar asset URLs so new modal logic is not blocked by stale browser cache
+- [sw.js](/home/chi/Tact/sw.js)
+  - Uses network-first fetches for HTML, CSS, JS, JSON, the event feed, and `gallery.json`
+  - Claims updated clients immediately so gallery/calendar modal fixes do not depend on a hard refresh
+  - Leaves static media on normal cache-backed behavior
 
 ## Landing page loading
 

@@ -5,7 +5,10 @@
     rendered: 0,
     batchSize: 12,
     observer: null,
-    modalOpen: false
+    modalOpen: false,
+    initialized: false,
+    initInFlight: null,
+    globalBound: false
   };
 
   function flattenEntries(entries) {
@@ -178,6 +181,14 @@
   }
 
   async function initGalleryPage() {
+    if (state.initInFlight) return state.initInFlight;
+    state.initInFlight = runGalleryInit().finally(function () {
+      state.initInFlight = null;
+    });
+    return state.initInFlight;
+  }
+
+  async function runGalleryInit() {
     if (window.TACT_CHROME) {
       if (typeof window.TACT_CHROME.ensureHeader === "function") {
         window.TACT_CHROME.ensureHeader();
@@ -216,16 +227,21 @@
 
     renderNextBatch();
     setupObserver();
+    bindGalleryGlobals();
+    state.initialized = true;
+  }
+
+  function bindGalleryGlobals() {
+    if (state.globalBound) return;
+    state.globalBound = true;
 
     var closeButton = document.getElementById("gallery-modal-close");
-    if (closeButton && !closeButton.dataset.bound) {
-      closeButton.dataset.bound = "true";
+    if (closeButton) {
       closeButton.addEventListener("click", closeModal);
     }
 
     var modal = document.getElementById("gallery-modal");
-    if (modal && !modal.dataset.bound) {
-      modal.dataset.bound = "true";
+    if (modal) {
       modal.addEventListener("click", function (event) {
         if (event.target === modal || event.target.hasAttribute("data-modal-dismiss")) {
           closeModal();
@@ -256,7 +272,15 @@
 
   window.initGalleryPage = initGalleryPage;
 
-  if (document.body && document.body.dataset.page === "gallery") {
-    initGalleryPage();
+  function bootGalleryPage() {
+    if (document.body && document.body.dataset.page === "gallery") {
+      initGalleryPage();
+    }
+  }
+
+  if (document.readyState === "loading") {
+    document.addEventListener("DOMContentLoaded", bootGalleryPage, { once: true });
+  } else {
+    bootGalleryPage();
   }
 })();

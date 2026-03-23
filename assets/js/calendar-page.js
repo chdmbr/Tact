@@ -4,7 +4,10 @@
     currentMonth: startOfMonth(new Date()),
     previewTimers: [],
     activeDateItems: [],
-    detailOpen: false
+    detailOpen: false,
+    initialized: false,
+    initInFlight: null,
+    globalBound: false
   };
 
   function startOfMonth(value) {
@@ -281,6 +284,14 @@
   }
 
   async function initCalendarPage() {
+    if (state.initInFlight) return state.initInFlight;
+    state.initInFlight = runCalendarInit().finally(function () {
+      state.initInFlight = null;
+    });
+    return state.initInFlight;
+  }
+
+  async function runCalendarInit() {
     if (window.TACT_CHROME) {
       if (typeof window.TACT_CHROME.ensureHeader === "function") {
         window.TACT_CHROME.ensureHeader();
@@ -307,7 +318,13 @@
     });
 
     bindDateGridSelection();
+    bindCalendarGlobals();
+    state.initialized = true;
+  }
 
+  function bindCalendarGlobals() {
+    if (state.globalBound) return;
+    state.globalBound = true;
     bindModalDismiss("calendar-date-modal", closeDateModal);
     bindModalDismiss("calendar-detail-modal", closeDetailModal);
   }
@@ -372,7 +389,15 @@
 
   window.initCalendarPage = initCalendarPage;
 
-  if (document.body && document.body.dataset.page === "calendar") {
-    initCalendarPage();
+  function bootCalendarPage() {
+    if (document.body && document.body.dataset.page === "calendar") {
+      initCalendarPage();
+    }
+  }
+
+  if (document.readyState === "loading") {
+    document.addEventListener("DOMContentLoaded", bootCalendarPage, { once: true });
+  } else {
+    bootCalendarPage();
   }
 })();
