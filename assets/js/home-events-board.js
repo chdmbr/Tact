@@ -6,12 +6,31 @@ async function initHomeEventsBoard() {
   teardownHomeEventsBoard();
   clearHomeEventsBoard();
 
-  var feed = [];
-  if (typeof window.loadTactEventFeed === "function") {
-    feed = await window.loadTactEventFeed();
+  var initialFeed = [];
+  if (typeof window.getTactEventFeedSnapshot === "function") {
+    initialFeed = window.getTactEventFeedSnapshot();
   } else {
-    feed = Array.isArray(window.TACT_EVENT_FEED) ? window.TACT_EVENT_FEED.slice() : [];
+    initialFeed = Array.isArray(window.TACT_EVENT_FEED) ? window.TACT_EVENT_FEED.slice() : [];
   }
+
+  renderBoard(initialFeed);
+
+  if (typeof window.loadTactEventFeed === "function") {
+    try {
+      var freshFeed = await window.loadTactEventFeed({ forceRefresh: true });
+      if (Array.isArray(freshFeed) && freshFeed.length) {
+        renderBoard(freshFeed);
+      }
+    } catch (_error) {
+      // Keep the already-rendered local snapshot.
+    }
+  }
+}
+
+function renderBoard(feed) {
+  teardownHomeEventsBoard();
+  clearHomeEventsBoard();
+
   if (!feed.length) {
     renderUpcomingCarousel(
       "home-upcoming-track",
@@ -192,7 +211,7 @@ function buildCard(item, isPast) {
     escapeHtml(item.poster || "assets/images/tact-logo.jpg") +
     '" onerror="this.onerror=null;this.src=\'assets/images/tact-logo.jpg\';" alt="' +
     escapeHtml((item.title || "Event") + " poster") +
-    '" loading="lazy">' +
+    '" loading="lazy" decoding="async">' +
     "<div>" +
     '<p class="home-events-meta">' +
     escapeHtml(formatDate(item.date)) +
@@ -219,7 +238,7 @@ function buildUpcomingCard(item) {
     escapeHtml(item.poster || "assets/images/tact-logo.jpg") +
     '" onerror="this.onerror=null;this.src=\'assets/images/tact-logo.jpg\';" alt="' +
     escapeHtml((item.title || "Event") + " poster") +
-    '" loading="lazy">' +
+    '" loading="eager" fetchpriority="high" decoding="async">' +
     '<div class="home-upcoming-copy">' +
     '<p class="home-events-meta">' +
     escapeHtml(formatDate(item.date)) +

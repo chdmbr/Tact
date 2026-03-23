@@ -167,6 +167,16 @@ Shared navigation and routing were updated so the new pages behave like the exis
   - Loads the right scripts for those routes
   - Runs the correct page initializer on route changes
 
+## Landing page loading
+
+- [index.html](/home/chi/Tact/index.html), [assets/js/index-page.js](/home/chi/Tact/assets/js/index-page.js), and [assets/js/home-events-board.js](/home/chi/Tact/assets/js/home-events-board.js) are tuned for better first paint.
+- The current approach:
+  - preloads and prioritizes the first hero image
+  - avoids lazy loading for the first visible hero frames
+  - reveals the hero slideshow after the first image is decoded to reduce visible partial rendering
+  - renders the home events board immediately from the local feed snapshot, then refreshes from async data
+  - lazy-loads lower-priority showcase images further down the page
+
 ## Deployment notes
 
 If gallery save fails with `Missing required event fields.`, the live Apps Script deployment is still using the old event-only code. Redeploy [backend/google-apps-script/Code.gs](/home/chi/Tact/backend/google-apps-script/Code.gs).

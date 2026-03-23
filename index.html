@@ -8,6 +8,7 @@
       name="description"
       content="The Academy Trust (tAcT), started in 2014 by the Indian Academy of Sciences, runs science outreach, student fellowships, and a Chair Professorship."
     >
+    <link rel="preload" as="image" href="flauntimages/Main pic roll/1.jpg" fetchpriority="high">
     <link rel="stylesheet" href="shared-ribbon.css">
     <link rel="stylesheet" href="assets/css/public-site.css">
     <style>
@@ -177,6 +178,22 @@
         position: relative;
         transform: scale(1.02);
         transition: transform 0.3s ease, box-shadow 0.3s ease;
+      }
+
+      .hero-visual::after {
+        content: "";
+        position: absolute;
+        inset: 0;
+        background:
+          radial-gradient(80% 80% at 50% 30%, rgba(255, 255, 255, 0.18), transparent 60%),
+          linear-gradient(180deg, rgba(248, 250, 248, 0.9), rgba(234, 241, 236, 0.6));
+        opacity: 1;
+        transition: opacity 0.35s ease;
+        pointer-events: none;
+      }
+
+      .hero-media-ready .hero-visual::after {
+        opacity: 0;
       }
 
       .hero-visual:hover {
@@ -434,7 +451,12 @@
         width: 100%;
         height: 100%;
         object-fit: fill;
-        transition: transform 1.5s ease-in-out;
+        opacity: 0;
+        transition: opacity 0.28s ease, transform 1.5s ease-in-out;
+      }
+
+      .hero-media-ready .slideshow-slide img {
+        opacity: 1;
       }
 
       .slideshow-slide.active img {
@@ -932,7 +954,8 @@
                 <img
                   src="flauntimages/Main pic roll/1.jpg"
                   alt=""
-                  loading="lazy"
+                  loading="eager"
+                  fetchpriority="high"
                   decoding="async"
                 >
               </div>
@@ -940,7 +963,8 @@
                 <img
                   src="flauntimages/Main pic roll/2.jpg"
                   alt=""
-                  loading="lazy"
+                  loading="eager"
+                  fetchpriority="high"
                   decoding="async"
                 >
               </div>
@@ -1095,10 +1119,10 @@
               <div class="flip-box" id="flip-box-1">
                 <div class="flip-box-inner">
                   <div class="flip-box-front">
-                    <img src="flauntimages/Vijnana Harate/1.jpg" alt="Vijnana Harate - conversations with scientists">
+                    <img src="flauntimages/Vijnana Harate/1.jpg" alt="Vijnana Harate - conversations with scientists" loading="lazy" decoding="async">
                   </div>
                   <div class="flip-box-back">
-                    <img src="flauntimages/Vijnana Harate/3.jpg" alt="Vijnana Harate - simple experiments">
+                    <img src="flauntimages/Vijnana Harate/3.jpg" alt="Vijnana Harate - simple experiments" loading="lazy" decoding="async">
                   </div>
                 </div>
               </div>
@@ -1107,10 +1131,10 @@
               <div class="flip-box" id="flip-box-2">
                 <div class="flip-box-inner">
                   <div class="flip-box-front">
-                    <img src="flauntimages/Vijnana Nataka/1.jpg" alt="Vijnana Nataka - theatre and science">
+                    <img src="flauntimages/Vijnana Nataka/1.jpg" alt="Vijnana Nataka - theatre and science" loading="lazy" decoding="async">
                   </div>
                   <div class="flip-box-back">
-                    <img src="flauntimages/Vijnana Nataka/3.jpg" alt="Vijnana Nataka - community performance">
+                    <img src="flauntimages/Vijnana Nataka/3.jpg" alt="Vijnana Nataka - community performance" loading="lazy" decoding="async">
                   </div>
                 </div>
               </div>
@@ -1119,10 +1143,10 @@
               <div class="flip-box" id="flip-box-3">
                 <div class="flip-box-inner">
                   <div class="flip-box-front">
-                    <img src="flauntimages/Vijnana Yuvati/1.jpg" alt="Vijnana Yuvati - women in STEM">
+                    <img src="flauntimages/Vijnana Yuvati/1.jpg" alt="Vijnana Yuvati - women in STEM" loading="lazy" decoding="async">
                   </div>
                   <div class="flip-box-back">
-                    <img src="flauntimages/Vijnana Yuvati/2.jpg" alt="Vijnana Yuvati - mentorship and workshops">
+                    <img src="flauntimages/Vijnana Yuvati/2.jpg" alt="Vijnana Yuvati - mentorship and workshops" loading="lazy" decoding="async">
                   </div>
                 </div>
               </div>
