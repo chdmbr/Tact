@@ -57,7 +57,6 @@
       '            <ul class="nav-menu" role="menu">',
       '              <li><a href="events.html#upcoming" role="menuitem">Upcoming Events</a></li>',
       '              <li><a href="events.html#past" role="menuitem">Past Events</a></li>',
-      '              <li><a href="events.html" role="menuitem">News & Updates</a></li>',
       '              <li><a href="gallery.html" role="menuitem">Gallery</a></li>',
       '              <li><a href="calendar.html" role="menuitem">Calendar</a></li>',
       "            </ul>",

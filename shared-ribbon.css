@@ -324,26 +324,44 @@ html {
 
 .nav-menu a {
   display: block;
-  margin: 0;
-  padding: 9px 16px;
+  margin: 0 6px;
+  padding: 10px 14px;
   font-size: 14px;
   color: #0f1b1a;
-  transition: background-color 0.15s ease, color 0.15s ease;
-  font-weight: 500;
+  transition: transform 0.18s ease, background 0.18s ease, color 0.18s ease, box-shadow 0.18s ease;
+  font-weight: 600;
   text-decoration: none;
+  border-radius: 10px;
+  position: relative;
+  overflow: hidden;
+}
+
+.nav-menu a::before {
+  content: "";
+  position: absolute;
+  inset: 0;
+  background:
+    linear-gradient(120deg, rgba(10, 122, 58, 0) 0%, rgba(10, 122, 58, 0.08) 45%, rgba(184, 134, 11, 0.14) 100%);
+  opacity: 0;
+  transition: opacity 0.18s ease;
 }
 
 .nav-menu a:hover {
-  background: rgba(10, 122, 58, 0.08);
+  background: linear-gradient(180deg, rgba(10, 122, 58, 0.08), rgba(184, 134, 11, 0.08));
   color: var(--green);
+  transform: translateX(4px);
+  box-shadow: inset 3px 0 0 rgba(184, 134, 11, 0.7);
+}
+
+.nav-menu a:hover::before {
+  opacity: 1;
 }
 
 .nav-menu a:focus-visible {
-  background: rgba(10, 122, 58, 0.08);
+  background: linear-gradient(180deg, rgba(10, 122, 58, 0.08), rgba(184, 134, 11, 0.08));
   outline: none;
   box-shadow: 0 0 0 2px rgba(10, 122, 58, 0.3) inset;
-  border-radius: 6px;
-  margin: 0 6px;
+  border-radius: 10px;
 }
 
 .nav-link--primary {
