@@ -223,28 +223,62 @@
     state.detailOpen = true;
 
     var modal = document.getElementById("calendar-detail-modal");
+    var layout = modal ? modal.querySelector(".calendar-detail-layout") : null;
+    var image = document.getElementById("calendar-detail-image");
     if (!modal) return;
 
-    document.getElementById("calendar-detail-image").src = item.url;
-    document.getElementById("calendar-detail-image").alt = item.title;
+    image.src = item.url;
+    image.alt = item.title;
     document.getElementById("calendar-detail-title").textContent = item.title;
     document.getElementById("calendar-detail-date").textContent = formatDate(item.date);
     document.getElementById("calendar-detail-location").textContent = item.location;
     document.getElementById("calendar-detail-description").textContent = item.description;
+    if (layout) {
+      layout.style.setProperty("--calendar-detail-media-height", "76vh");
+    }
 
     modal.hidden = false;
     document.body.classList.add("modal-open");
+    syncDetailModalHeight();
   }
 
   function closeDetailModal() {
     var modal = document.getElementById("calendar-detail-modal");
+    var layout = modal ? modal.querySelector(".calendar-detail-layout") : null;
     if (!modal) return;
     modal.hidden = true;
+    if (layout) {
+      layout.style.removeProperty("--calendar-detail-media-height");
+    }
     state.detailOpen = false;
 
     var dateModal = document.getElementById("calendar-date-modal");
     if (!dateModal || dateModal.hidden) {
       document.body.classList.remove("modal-open");
+    }
+  }
+
+  function syncDetailModalHeight() {
+    if (!state.detailOpen) return;
+
+    var layout = document.querySelector("#calendar-detail-modal .calendar-detail-layout");
+    var image = document.getElementById("calendar-detail-image");
+    if (!layout || !image) return;
+
+    var apply = function () {
+      var rect = image.getBoundingClientRect();
+      var nextHeight = Math.max(220, Math.round(rect.height || 0));
+      if (nextHeight) {
+        layout.style.setProperty("--calendar-detail-media-height", nextHeight + "px");
+      }
+    };
+
+    if (image.complete) {
+      window.requestAnimationFrame(apply);
+    } else {
+      image.onload = function () {
+        apply();
+      };
     }
   }
 
@@ -310,6 +344,8 @@
       closeDateModal();
     }
   });
+
+  window.addEventListener("resize", syncDetailModalHeight);
 
   window.TACT_PAGE_RUNTIME = window.TACT_PAGE_RUNTIME || {};
   window.TACT_PAGE_RUNTIME.initCalendarPage = initCalendarPage;

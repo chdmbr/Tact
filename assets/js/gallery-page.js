@@ -98,25 +98,59 @@
 
   function openModal(item) {
     var modal = document.getElementById("gallery-modal");
+    var dialog = modal ? modal.querySelector(".gallery-modal-dialog") : null;
+    var image = document.getElementById("gallery-modal-image");
     if (!modal) return;
 
-    document.getElementById("gallery-modal-image").src = item.url;
-    document.getElementById("gallery-modal-image").alt = item.title;
+    image.src = item.url;
+    image.alt = item.title;
     document.getElementById("gallery-modal-title").textContent = item.title;
     document.getElementById("gallery-modal-date").textContent = formatDate(item.date);
     document.getElementById("gallery-modal-location").textContent = item.location;
     document.getElementById("gallery-modal-description").textContent = item.description;
+    if (dialog) {
+      dialog.style.setProperty("--gallery-modal-media-height", "90vh");
+    }
     modal.hidden = false;
     document.body.classList.add("modal-open");
     state.modalOpen = true;
+    syncModalHeight();
   }
 
   function closeModal() {
     var modal = document.getElementById("gallery-modal");
+    var dialog = modal ? modal.querySelector(".gallery-modal-dialog") : null;
     if (!modal) return;
     modal.hidden = true;
+    if (dialog) {
+      dialog.style.removeProperty("--gallery-modal-media-height");
+    }
     document.body.classList.remove("modal-open");
     state.modalOpen = false;
+  }
+
+  function syncModalHeight() {
+    if (!state.modalOpen) return;
+
+    var dialog = document.querySelector("#gallery-modal .gallery-modal-dialog");
+    var image = document.getElementById("gallery-modal-image");
+    if (!dialog || !image) return;
+
+    var apply = function () {
+      var rect = image.getBoundingClientRect();
+      var nextHeight = Math.max(240, Math.round(rect.height || 0));
+      if (nextHeight) {
+        dialog.style.setProperty("--gallery-modal-media-height", nextHeight + "px");
+      }
+    };
+
+    if (image.complete) {
+      window.requestAnimationFrame(apply);
+    } else {
+      image.onload = function () {
+        apply();
+      };
+    }
   }
 
   function setupObserver() {
@@ -205,6 +239,8 @@
       closeModal();
     }
   });
+
+  window.addEventListener("resize", syncModalHeight);
 
   function escapeHtml(value) {
     return String(value || "")
