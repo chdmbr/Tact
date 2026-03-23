@@ -1,4 +1,21 @@
 (function () {
+  function syncHeaderOffset() {
+    var root = document.getElementById("site-header-root");
+    if (!root) return;
+
+    var header = root.querySelector(".site-header");
+    if (!header) {
+      root.style.removeProperty("min-height");
+      document.documentElement.style.removeProperty("--site-header-offset");
+      return;
+    }
+
+    var topOffset = window.innerWidth <= 600 ? 8 : 12;
+    var totalOffset = Math.ceil(header.offsetHeight + topOffset);
+    root.style.minHeight = totalOffset + "px";
+    document.documentElement.style.setProperty("--site-header-offset", totalOffset + "px");
+  }
+
   function renderSiteHeader() {
     var root = document.getElementById("site-header-root");
     if (!root) return;
@@ -41,7 +58,8 @@
       '              <li><a href="events.html#upcoming" role="menuitem">Upcoming Events</a></li>',
       '              <li><a href="events.html#past" role="menuitem">Past Events</a></li>',
       '              <li><a href="events.html" role="menuitem">News & Updates</a></li>',
-      '              <li><a href="events.html" role="menuitem">Calendar</a></li>',
+      '              <li><a href="gallery.html" role="menuitem">Gallery</a></li>',
+      '              <li><a href="calendar.html" role="menuitem">Calendar</a></li>',
       "            </ul>",
       "          </li>",
       '          <li class="nav-item nav-item--has-menu">',
@@ -65,6 +83,7 @@
       "</header>"
     ].join("");
     delete root.dataset.dropdownInit;
+    syncHeaderOffset();
   }
 
   function ensureHeader() {
@@ -122,6 +141,9 @@
   window.TACT_CHROME = {
     ensureHeader: ensureHeader,
     renderHeader: renderSiteHeader,
-    initDropdowns: initDropdowns
+    initDropdowns: initDropdowns,
+    syncHeaderOffset: syncHeaderOffset
   };
+
+  window.addEventListener("resize", syncHeaderOffset);
 })();

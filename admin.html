@@ -3,7 +3,7 @@
 <head>
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width, initial-scale=1">
-  <title>tAcT Admin - Event Update</title>
+  <title>tAcT Admin - Events and Gallery</title>
   <style>
     :root {
       --bg: #f5f7f4;
@@ -26,7 +26,7 @@
       min-height: 100vh;
     }
     .wrap {
-      max-width: 720px;
+      max-width: 760px;
       margin: 0 auto;
       display: grid;
       gap: 12px;
@@ -49,9 +49,6 @@
       border-radius: 12px;
       background: linear-gradient(180deg, var(--card-soft), #ffffff);
       box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.65);
-    }
-    .pin-tools-row {
-      margin-top: 12px;
     }
     h1, h2 {
       margin: 0 0 8px;
@@ -108,6 +105,14 @@
       border: 1px solid var(--line);
       font-weight: 600;
     }
+    .accent {
+      background: linear-gradient(180deg, #1e5aa8, #184886);
+      color: #fff;
+    }
+    .danger {
+      background: linear-gradient(180deg, #bb3c2d, #9a2f22);
+      color: #fff;
+    }
     .btn-row {
       display: grid;
       grid-template-columns: 1fr 1fr;
@@ -124,7 +129,6 @@
     }
     .mono { font-family: ui-monospace, SFMono-Regular, Menlo, Consolas, monospace; }
     .mini { font-size: 12px; color: var(--muted); margin: 0; }
-    .section-title { margin-top: 8px; }
     .section-kicker {
       margin: 0 0 6px;
       font-size: 11px;
@@ -172,9 +176,7 @@
       font-size: 16px;
       color: #173125;
     }
-    .event-copy {
-      min-width: 0;
-    }
+    .event-copy { min-width: 0; }
     .event-meta {
       margin: 0 0 4px;
       font-size: 12px;
@@ -186,24 +188,79 @@
       color: #738278;
       word-break: break-word;
     }
-    .danger {
-      background: linear-gradient(180deg, #bb3c2d, #9a2f22);
-      color: #fff;
-    }
     .event-actions {
       display: flex;
       align-items: center;
       justify-content: flex-end;
     }
-    .accent {
-      background: linear-gradient(180deg, #1e5aa8, #184886);
+    .view-switch {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 10px;
+      margin-bottom: 12px;
+    }
+    .view-switch button[data-active="true"] {
+      background: linear-gradient(180deg, #0a7a3a, #08632f);
       color: #fff;
+      border-color: transparent;
+      box-shadow: 0 10px 20px rgba(10, 122, 58, 0.18);
+    }
+    .panel-head {
+      margin-bottom: 12px;
+    }
+    .gallery-list {
+      display: grid;
+      gap: 12px;
+    }
+    .gallery-block {
+      padding: 12px;
+      border: 1px solid rgba(10, 20, 10, 0.08);
+      border-radius: 12px;
+      background: linear-gradient(180deg, #ffffff, var(--card-soft));
+      display: grid;
+      gap: 10px;
+    }
+    .gallery-block-head {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 12px;
+    }
+    .gallery-block-head strong {
+      color: #173125;
+      font-size: 14px;
+    }
+    .gallery-block-head button {
+      width: auto;
+      min-width: 120px;
+    }
+    .gallery-preview {
+      display: grid;
+      place-items: center;
+      min-height: 180px;
+      border: 1px dashed rgba(10, 20, 10, 0.14);
+      border-radius: 12px;
+      background:
+        linear-gradient(180deg, rgba(255, 255, 255, 0.8), rgba(245, 248, 245, 0.96));
+      overflow: hidden;
+    }
+    .gallery-preview img {
+      width: 100%;
+      max-height: 280px;
+      object-fit: cover;
+      display: block;
+    }
+    .gallery-preview span {
+      color: #6b7b72;
+      font-size: 13px;
+      padding: 16px;
+      text-align: center;
     }
     .manager-toggle-row {
       margin-bottom: 12px;
     }
     @media (max-width: 680px) {
-      .row-2, .btn-row { grid-template-columns: 1fr; }
+      .row-2, .btn-row, .view-switch { grid-template-columns: 1fr; }
       .manager-toolbar { grid-template-columns: 1fr; }
       .event-item {
         grid-template-columns: 64px 1fr;
@@ -217,8 +274,12 @@
         grid-column: 1 / -1;
         justify-content: stretch;
       }
-      .event-actions button {
+      .event-actions button,
+      .gallery-block-head button {
         width: 100%;
+      }
+      .gallery-block-head {
+        display: grid;
       }
     }
   </style>
@@ -226,14 +287,14 @@
 <body>
   <div class="wrap">
     <section class="card">
-      <h1>tAcT Event Admin</h1>
-      <p>Mobile form for updating events. Fill and submit. No code edits needed.</p>
+      <h1>tAcT Admin</h1>
+      <p>Use the same PIN-protected panel to publish events or add gallery collections without manual code edits.</p>
     </section>
 
     <section id="pin-card" class="card card-primary">
       <p class="section-kicker">Start Here</p>
       <h2>PIN Access</h2>
-      <p>Enter your admin PIN to unlock the event form.</p>
+      <p>Enter your admin PIN to unlock publishing tools.</p>
       <div class="grid">
         <div>
           <label for="pin-input">Admin PIN</label>
@@ -243,7 +304,7 @@
       </div>
       <p id="pin-hint" class="status hidden">PIN accepted. Form unlocked.</p>
 
-      <div class="pin-tools-row">
+      <div style="margin-top:12px;">
         <button id="toggle-pin-tools-btn" type="button" class="secondary">Set / Change PIN</button>
       </div>
 
@@ -273,87 +334,160 @@
     </section>
 
     <section id="form-card" class="card hidden">
-      <div class="manager-toggle-row">
-        <button id="toggle-manage-btn" type="button" class="accent">Manage Existing Events</button>
+      <div class="view-switch">
+        <button id="show-event-panel-btn" type="button" class="secondary" data-active="true">Add / Update Event</button>
+        <button id="show-gallery-panel-btn" type="button" class="secondary" data-active="false">Add Gallery</button>
       </div>
 
-      <section id="manage-card" class="subcard hidden">
-        <div class="manager-toolbar">
-          <div>
-            <h2>Manage Existing Events</h2>
-            <p>Synced from GitHub. Delete removes the full event folder and rebuilds the feed.</p>
-          </div>
-          <button id="refresh-events-btn" type="button" class="secondary">Refresh List</button>
-        </div>
-        <div id="manage-status" class="status hidden"></div>
-        <div id="event-list" class="event-list"></div>
-      </section>
-
-      <h2>Add / Update Event</h2>
-      <p>Use this for both upcoming and completed events.</p>
-
-      <form id="admin-form" class="grid">
-        <div>
-          <label for="title">Event Title</label>
-          <input id="title" name="title" required>
+      <section id="event-panel">
+        <div class="manager-toggle-row">
+          <button id="toggle-manage-btn" type="button" class="accent">Manage Existing Events</button>
         </div>
 
-        <div class="row-2">
-          <div>
-            <label for="date">Date</label>
-            <input id="date" name="date" type="date" required>
+        <section id="manage-card" class="subcard hidden">
+          <div class="manager-toolbar">
+            <div>
+              <h2>Manage Existing Events</h2>
+              <p>Synced from GitHub. Delete removes the full event folder and rebuilds the feed.</p>
+            </div>
+            <button id="refresh-events-btn" type="button" class="secondary">Refresh List</button>
           </div>
+          <div id="manage-status" class="status hidden"></div>
+          <div id="event-list" class="event-list"></div>
+        </section>
+
+        <div class="panel-head">
+          <h2>Add / Update Event</h2>
+          <p>Use this for both upcoming and completed events.</p>
+        </div>
+
+        <form id="admin-form" class="grid">
+          <div>
+            <label for="title">Event Title</label>
+            <input id="title" name="title" required>
+          </div>
+
           <div class="row-2">
             <div>
-              <label for="time-from">From Time</label>
-              <input id="time-from" name="timeFrom" type="time" required>
+              <label for="date">Date</label>
+              <input id="date" name="date" type="date" required>
+            </div>
+            <div class="row-2">
+              <div>
+                <label for="time-from">From Time</label>
+                <input id="time-from" name="timeFrom" type="time" required>
+              </div>
+              <div>
+                <label for="time-to">To Time</label>
+                <input id="time-to" name="timeTo" type="time" required>
+              </div>
+            </div>
+          </div>
+
+          <div class="row-2">
+            <div>
+              <label for="location">Location</label>
+              <input id="location" name="location" required>
             </div>
             <div>
-              <label for="time-to">To Time</label>
-              <input id="time-to" name="timeTo" type="time" required>
+              <label for="status">Status</label>
+              <select id="status" name="status">
+                <option value="scheduled">Scheduled</option>
+                <option value="completed">Completed</option>
+              </select>
             </div>
           </div>
-        </div>
 
-        <div class="row-2">
           <div>
-            <label for="location">Location</label>
-            <input id="location" name="location" required>
+            <label for="teaser">Short Summary</label>
+            <textarea id="teaser" name="teaser" placeholder="One-line summary"></textarea>
           </div>
+
           <div>
-            <label for="status">Status</label>
-            <select id="status" name="status">
-              <option value="scheduled">Scheduled</option>
-              <option value="completed">Completed</option>
-            </select>
+            <label for="homepageMatter">Homepage Text</label>
+            <textarea id="homepageMatter" name="homepageMatter" placeholder="2-3 lines for homepage card"></textarea>
           </div>
+
+          <div>
+            <label for="poster">Poster Image</label>
+            <input id="poster" name="poster" type="file" accept=".jpg,.jpeg,.png,.webp,.svg" required>
+            <p id="poster-meta" class="mono"></p>
+          </div>
+
+          <div class="btn-row">
+            <button id="event-submit-btn" type="submit">Submit Event</button>
+            <button id="clear-btn" type="button" class="secondary">Clear Form</button>
+          </div>
+        </form>
+
+        <div id="submit-status" class="status hidden"></div>
+      </section>
+
+      <section id="gallery-panel" class="hidden">
+        <div class="panel-head">
+          <h2>Add Gallery</h2>
+          <p>Create a dated gallery entry with one or more image and description pairs. It will save to <span class="mono">/data/gallery.json</span> and <span class="mono">/images/gallery/</span>.</p>
         </div>
 
-        <div>
-          <label for="teaser">Short Summary</label>
-          <textarea id="teaser" name="teaser" placeholder="One-line summary"></textarea>
-        </div>
+        <form id="gallery-form" class="grid">
+          <div>
+            <label for="gallery-title">Title</label>
+            <input id="gallery-title" name="galleryTitle" required>
+          </div>
 
-        <div>
-          <label for="homepageMatter">Homepage Text</label>
-          <textarea id="homepageMatter" name="homepageMatter" placeholder="2-3 lines for homepage card"></textarea>
-        </div>
+          <div class="row-2">
+            <div>
+              <label for="gallery-date">Date</label>
+              <input id="gallery-date" name="galleryDate" type="date" required>
+            </div>
+            <div>
+              <label for="gallery-location">Location</label>
+              <input id="gallery-location" name="galleryLocation" required>
+            </div>
+          </div>
 
-        <div>
-          <label for="poster">Poster Image</label>
-          <input id="poster" name="poster" type="file" accept=".jpg,.jpeg,.png,.webp,.svg" required>
-          <p id="poster-meta" class="mono"></p>
-        </div>
+          <div class="subcard">
+            <div class="gallery-block-head">
+              <strong>Gallery Images</strong>
+              <button id="add-gallery-image-btn" type="button" class="secondary">+ Add More Images</button>
+            </div>
+            <p class="mini">At least one image is required. Every image needs a description.</p>
+            <div id="gallery-image-list" class="gallery-list"></div>
+          </div>
 
-        <div class="btn-row">
-          <button type="submit">Submit Event</button>
-          <button id="clear-btn" type="button" class="secondary">Clear Form</button>
-        </div>
-      </form>
+          <div class="btn-row">
+            <button id="gallery-submit-btn" type="submit">Save Gallery</button>
+            <button id="clear-gallery-btn" type="button" class="secondary">Clear Gallery Form</button>
+          </div>
+        </form>
 
-      <div id="submit-status" class="status hidden"></div>
+        <div id="gallery-status" class="status hidden"></div>
+      </section>
     </section>
   </div>
+
+  <template id="gallery-block-template">
+    <article class="gallery-block">
+      <div class="gallery-block-head">
+        <strong>Image <span data-image-index></span></strong>
+        <button type="button" class="danger" data-remove-gallery-block>Remove</button>
+      </div>
+      <div class="grid">
+        <div>
+          <label>Image Upload</label>
+          <input type="file" accept=".jpg,.jpeg,.png,.webp,.svg" data-gallery-file required>
+          <p class="mini mono" data-gallery-file-meta></p>
+        </div>
+        <div class="gallery-preview" data-gallery-preview>
+          <span>Preview appears here before upload.</span>
+        </div>
+        <div>
+          <label>Description</label>
+          <textarea data-gallery-description placeholder="Describe the moment in this image." required></textarea>
+        </div>
+      </div>
+    </article>
+  </template>
 
   <script src="assets/js/events-config.js"></script>
   <script>
@@ -368,21 +502,11 @@
 
     const pinCard = document.getElementById("pin-card");
     const formCard = document.getElementById("form-card");
-    const manageCard = document.getElementById("manage-card");
     const pinInput = document.getElementById("pin-input");
     const pinHint = document.getElementById("pin-hint");
     const unlockBtn = document.getElementById("unlock-btn");
     const togglePinToolsBtn = document.getElementById("toggle-pin-tools-btn");
     const pinToolsPanel = document.getElementById("pin-tools-panel");
-    const adminForm = document.getElementById("admin-form");
-    const posterInput = document.getElementById("poster");
-    const posterMeta = document.getElementById("poster-meta");
-    const statusBox = document.getElementById("submit-status");
-    const clearBtn = document.getElementById("clear-btn");
-    const toggleManageBtn = document.getElementById("toggle-manage-btn");
-    const refreshEventsBtn = document.getElementById("refresh-events-btn");
-    const manageStatus = document.getElementById("manage-status");
-    const eventList = document.getElementById("event-list");
     const oldPinInput = document.getElementById("old-pin-input");
     const newPinInput = document.getElementById("new-pin-input");
     const confirmPinInput = document.getElementById("confirm-pin-input");
@@ -390,16 +514,52 @@
     const pinModeNote = document.getElementById("pin-mode-note");
     const pinChangeStatus = document.getElementById("pin-change-status");
 
+    const showEventPanelBtn = document.getElementById("show-event-panel-btn");
+    const showGalleryPanelBtn = document.getElementById("show-gallery-panel-btn");
+    const eventPanel = document.getElementById("event-panel");
+    const galleryPanel = document.getElementById("gallery-panel");
+
+    const manageCard = document.getElementById("manage-card");
+    const toggleManageBtn = document.getElementById("toggle-manage-btn");
+    const refreshEventsBtn = document.getElementById("refresh-events-btn");
+    const manageStatus = document.getElementById("manage-status");
+    const eventList = document.getElementById("event-list");
+
+    const adminForm = document.getElementById("admin-form");
+    const posterInput = document.getElementById("poster");
+    const posterMeta = document.getElementById("poster-meta");
+    const statusBox = document.getElementById("submit-status");
+    const clearBtn = document.getElementById("clear-btn");
+    const eventSubmitBtn = document.getElementById("event-submit-btn");
+
+    const galleryForm = document.getElementById("gallery-form");
+    const galleryStatus = document.getElementById("gallery-status");
+    const galleryList = document.getElementById("gallery-image-list");
+    const galleryBlockTemplate = document.getElementById("gallery-block-template");
+    const addGalleryImageBtn = document.getElementById("add-gallery-image-btn");
+    const clearGalleryBtn = document.getElementById("clear-gallery-btn");
+    const gallerySubmitBtn = document.getElementById("gallery-submit-btn");
+
     let unlockedPin = "";
     let posterPayload = null;
     let pinConfigured = true;
+    let adminMode = "event";
 
     bootPinStatus();
+    ensureGalleryBlocks();
 
     togglePinToolsBtn.addEventListener("click", function () {
       const willShow = pinToolsPanel.classList.contains("hidden");
       pinToolsPanel.classList.toggle("hidden", !willShow);
       togglePinToolsBtn.textContent = willShow ? "Hide PIN Settings" : "Set / Change PIN";
+    });
+
+    showEventPanelBtn.addEventListener("click", function () {
+      switchAdminMode("event");
+    });
+
+    showGalleryPanelBtn.addEventListener("click", function () {
+      switchAdminMode("gallery");
     });
 
     pinInput.addEventListener("keydown", function (event) {
@@ -442,6 +602,7 @@
         pinHint.classList.remove("hidden");
         pinCard.classList.add("hidden");
         formCard.classList.remove("hidden");
+        switchAdminMode(adminMode);
       } catch (_err) {
         alert("Could not verify PIN. Please try again.");
       } finally {
@@ -492,7 +653,6 @@
         newPinInput.value = "";
         confirmPinInput.value = "";
         pinChangeStatus.textContent = "PIN saved successfully.";
-        loadExistingEvents(false);
       } finally {
         changePinBtn.disabled = false;
       }
@@ -523,8 +683,18 @@
       adminForm.reset();
       posterPayload = null;
       posterMeta.textContent = "";
-      statusBox.classList.add("hidden");
-      statusBox.textContent = "";
+      hideStatus(statusBox);
+    });
+
+    addGalleryImageBtn.addEventListener("click", function () {
+      addGalleryBlock();
+    });
+
+    clearGalleryBtn.addEventListener("click", function () {
+      galleryForm.reset();
+      galleryList.innerHTML = "";
+      ensureGalleryBlocks();
+      hideStatus(galleryStatus);
     });
 
     adminForm.addEventListener("submit", async function (event) {
@@ -549,6 +719,7 @@
         alert("Enter valid from and to times.");
         return;
       }
+
       const payload = {
         pin: unlockedPin,
         event: {
@@ -565,9 +736,8 @@
       };
 
       try {
-        statusBox.classList.remove("hidden");
-        statusBox.textContent = "Preparing event data...";
-        setSubmittingState(true);
+        showStatus(statusBox, "Preparing event data...");
+        setSubmittingState(true, "event");
 
         window.setTimeout(function () {
           if (statusBox.textContent === "Preparing event data...") {
@@ -581,22 +751,7 @@
           }
         }, 1800);
 
-        const response = await fetch(ADMIN_CONFIG.endpoint, {
-          method: "POST",
-          headers: { "Content-Type": "text/plain;charset=utf-8" },
-          body: JSON.stringify(payload)
-        });
-
-        const text = await response.text();
-        let body = {};
-        try {
-          body = JSON.parse(text || "{}");
-        } catch (_err) {
-          body = {};
-        }
-        if (!response.ok) {
-          throw new Error(text || "Submit failed");
-        }
+        const body = await postAdminPayload(payload);
         if (body && body.ok === false) {
           throw new Error(body.error || "Submit failed");
         }
@@ -606,8 +761,76 @@
           window.location.reload();
         }, 700);
       } catch (err) {
-        statusBox.textContent = "Submit failed: " + (err && err.message ? err.message : "Unknown error");
-        setSubmittingState(false);
+        showStatus(statusBox, "Submit failed: " + (err && err.message ? err.message : "Unknown error"), true);
+      } finally {
+        setSubmittingState(false, "event");
+      }
+    });
+
+    galleryForm.addEventListener("submit", async function (event) {
+      event.preventDefault();
+      if (!unlockedPin) {
+        alert("Unlock with PIN first.");
+        return;
+      }
+      if (!hasConfiguredEndpoint()) {
+        alert("Admin endpoint is not configured yet.");
+        return;
+      }
+
+      const title = valueOf("gallery-title");
+      const date = valueOf("gallery-date");
+      const location = valueOf("gallery-location");
+      if (!title || !date || !location) {
+        alert("Fill title, date, and location.");
+        return;
+      }
+
+      const images = collectGalleryImages();
+      if (!images.ok) {
+        alert(images.error);
+        return;
+      }
+
+      const payload = {
+        action: "saveGallery",
+        pin: unlockedPin,
+        gallery: {
+          slug: slugify(date + "--" + title),
+          title: title,
+          date: date,
+          location: location
+        },
+        images: images.items
+      };
+
+      try {
+        showStatus(galleryStatus, "Preparing gallery upload...");
+        setSubmittingState(true, "gallery");
+
+        window.setTimeout(function () {
+          if (galleryStatus.textContent === "Preparing gallery upload...") {
+            galleryStatus.textContent = "Uploading images to GitHub and updating gallery data...";
+          }
+        }, 400);
+
+        const body = await postAdminPayload(payload);
+        if (body && body.ok === false) {
+          throw new Error(body.error || "Gallery save failed");
+        }
+
+        showStatus(galleryStatus, "Gallery saved successfully. The data file and image folder were updated.");
+        galleryForm.reset();
+        galleryList.innerHTML = "";
+        ensureGalleryBlocks();
+      } catch (err) {
+        const rawMessage = err && err.message ? err.message : "Unknown error";
+        const hint = rawMessage === "Missing required event fields."
+          ? " Live admin endpoint is still using the old event-only backend. Redeploy the updated Apps Script web app, then try again."
+          : "";
+        showStatus(galleryStatus, "Gallery save failed: " + rawMessage + hint, true);
+      } finally {
+        setSubmittingState(false, "gallery");
       }
     });
 
@@ -653,22 +876,143 @@
       return hours + ":" + minutes + " " + suffix;
     }
 
-    function setSubmittingState(isSubmitting) {
+    function switchAdminMode(mode) {
+      adminMode = mode === "gallery" ? "gallery" : "event";
+      const isGallery = adminMode === "gallery";
+      eventPanel.classList.toggle("hidden", isGallery);
+      galleryPanel.classList.toggle("hidden", !isGallery);
+      showEventPanelBtn.dataset.active = String(!isGallery);
+      showGalleryPanelBtn.dataset.active = String(isGallery);
+    }
+
+    function ensureGalleryBlocks() {
+      if (galleryList.children.length) {
+        renumberGalleryBlocks();
+        return;
+      }
+      addGalleryBlock();
+    }
+
+    function addGalleryBlock() {
+      const fragment = galleryBlockTemplate.content.cloneNode(true);
+      const block = fragment.querySelector(".gallery-block");
+      const fileInput = block.querySelector("[data-gallery-file]");
+      const descriptionInput = block.querySelector("[data-gallery-description]");
+      const preview = block.querySelector("[data-gallery-preview]");
+      const meta = block.querySelector("[data-gallery-file-meta]");
+      const removeBtn = block.querySelector("[data-remove-gallery-block]");
+
+      block._payload = null;
+
+      fileInput.addEventListener("change", async function () {
+        const file = fileInput.files && fileInput.files[0];
+        if (!file) {
+          block._payload = null;
+          meta.textContent = "";
+          preview.innerHTML = "<span>Preview appears here before upload.</span>";
+          return;
+        }
+
+        const base64 = await readFileAsBase64(file);
+        block._payload = {
+          name: file.name,
+          mime: file.type || "application/octet-stream",
+          data: base64
+        };
+        meta.textContent = "Selected: " + file.name + " (" + Math.round(file.size / 1024) + " KB)";
+        preview.innerHTML = "";
+        const img = document.createElement("img");
+        img.src = URL.createObjectURL(file);
+        img.alt = file.name;
+        img.onload = function () {
+          URL.revokeObjectURL(img.src);
+        };
+        preview.appendChild(img);
+      });
+
+      descriptionInput.addEventListener("input", function () {
+        hideStatus(galleryStatus);
+      });
+
+      removeBtn.addEventListener("click", function () {
+        if (galleryList.children.length === 1) {
+          fileInput.value = "";
+          descriptionInput.value = "";
+          block._payload = null;
+          meta.textContent = "";
+          preview.innerHTML = "<span>Preview appears here before upload.</span>";
+          return;
+        }
+        block.remove();
+        renumberGalleryBlocks();
+      });
+
+      galleryList.appendChild(block);
+      renumberGalleryBlocks();
+    }
+
+    function renumberGalleryBlocks() {
+      Array.from(galleryList.children).forEach(function (block, index) {
+        const indexNode = block.querySelector("[data-image-index]");
+        if (indexNode) {
+          indexNode.textContent = String(index + 1);
+        }
+      });
+    }
+
+    function collectGalleryImages() {
+      const blocks = Array.from(galleryList.querySelectorAll(".gallery-block"));
+      if (!blocks.length) {
+        return { ok: false, error: "Add at least one image." };
+      }
+
+      const items = [];
+      for (const block of blocks) {
+        const description = (block.querySelector("[data-gallery-description]").value || "").trim();
+        if (!block._payload) {
+          return { ok: false, error: "Choose an image for every gallery block." };
+        }
+        if (!description) {
+          return { ok: false, error: "Write a description for every gallery image." };
+        }
+
+        items.push({
+          name: block._payload.name,
+          mime: block._payload.mime,
+          data: block._payload.data,
+          description: description
+        });
+      }
+
+      return { ok: true, items: items };
+    }
+
+    function setSubmittingState(isSubmitting, scope) {
       unlockBtn.disabled = isSubmitting;
-      clearBtn.disabled = isSubmitting;
       changePinBtn.disabled = isSubmitting;
 
-      const submitButton = adminForm.querySelector('button[type="submit"]');
-      if (submitButton) {
-        submitButton.disabled = isSubmitting;
-        submitButton.textContent = isSubmitting ? "Publishing..." : "Submit Event";
+      if (!scope || scope === "event") {
+        clearBtn.disabled = isSubmitting;
+        posterInput.disabled = isSubmitting;
+        eventSubmitBtn.disabled = isSubmitting;
+        eventSubmitBtn.textContent = isSubmitting ? "Publishing..." : "Submit Event";
+      }
+
+      if (!scope || scope === "gallery") {
+        addGalleryImageBtn.disabled = isSubmitting;
+        clearGalleryBtn.disabled = isSubmitting;
+        gallerySubmitBtn.disabled = isSubmitting;
+        gallerySubmitBtn.textContent = isSubmitting ? "Saving..." : "Save Gallery";
+        Array.from(galleryList.querySelectorAll("input, textarea, button")).forEach(function (node) {
+          node.disabled = isSubmitting;
+        });
       }
     }
 
     function readFileAsBase64(file) {
       return new Promise((resolve, reject) => {
         const reader = new FileReader();
-        reader.onload = () => {
+        reader.onload = function () {
           const value = reader.result || "";
           const commaIndex = String(value).indexOf(",");
           resolve(commaIndex >= 0 ? String(value).slice(commaIndex + 1) : String(value));
@@ -682,20 +1026,49 @@
       return !!ADMIN_CONFIG.endpoint;
     }
 
+    function showStatus(node, text, isError) {
+      node.classList.remove("hidden");
+      node.textContent = text;
+      node.style.color = isError ? "#7f2017" : "";
+      node.style.borderColor = isError ? "rgba(187, 60, 45, 0.28)" : "";
+      node.style.background = isError ? "rgba(187, 60, 45, 0.08)" : "";
+    }
+
+    function hideStatus(node) {
+      node.classList.add("hidden");
+      node.textContent = "";
+      node.style.color = "";
+      node.style.borderColor = "";
+      node.style.background = "";
+    }
+
     function showManageStatus(text, isError) {
-      manageStatus.classList.remove("hidden");
-      manageStatus.textContent = text;
-      manageStatus.style.color = isError ? "#7f2017" : "";
-      manageStatus.style.borderColor = isError ? "rgba(187, 60, 45, 0.28)" : "";
-      manageStatus.style.background = isError ? "rgba(187, 60, 45, 0.08)" : "";
+      showStatus(manageStatus, text, isError);
     }
 
     function clearManageStatus() {
-      manageStatus.classList.add("hidden");
-      manageStatus.textContent = "";
-      manageStatus.style.color = "";
-      manageStatus.style.borderColor = "";
-      manageStatus.style.background = "";
+      hideStatus(manageStatus);
+    }
+
+    async function postAdminPayload(payload) {
+      const response = await fetch(ADMIN_CONFIG.endpoint, {
+        method: "POST",
+        headers: { "Content-Type": "text/plain;charset=utf-8" },
+        body: JSON.stringify(payload)
+      });
+
+      const text = await response.text();
+      let body = {};
+      try {
+        body = JSON.parse(text || "{}");
+      } catch (_err) {
+        body = {};
+      }
+
+      if (!response.ok) {
+        throw new Error((body && body.error) || text || "Request failed");
+      }
+      return body;
     }
 
     async function loadExistingEvents(showRefreshMessage) {
@@ -711,13 +1084,8 @@
       eventList.innerHTML = '<p class="mini">Loading events...</p>';
 
       try {
-        const response = await fetch(ADMIN_CONFIG.endpoint, {
-          method: "POST",
-          headers: { "Content-Type": "text/plain;charset=utf-8" },
-          body: JSON.stringify({ action: "listEvents", pin: unlockedPin })
-        });
-        const body = await response.json();
-        if (!response.ok || !body || body.ok === false) {
+        const body = await postAdminPayload({ action: "listEvents", pin: unlockedPin });
+        if (!body || body.ok === false) {
           throw new Error(body && body.error ? body.error : "Could not load events.");
         }
 
@@ -796,13 +1164,8 @@
       showManageStatus('Deleting "' + title + '" from GitHub...', false);
 
       try {
-        const response = await fetch(ADMIN_CONFIG.endpoint, {
-          method: "POST",
-          headers: { "Content-Type": "text/plain;charset=utf-8" },
-          body: JSON.stringify({ action: "deleteEvent", pin: unlockedPin, slug: slug })
-        });
-        const body = await response.json();
-        if (!response.ok || !body || body.ok === false) {
+        const body = await postAdminPayload({ action: "deleteEvent", pin: unlockedPin, slug: slug });
+        if (!body || body.ok === false) {
           throw new Error(body && body.error ? body.error : "Delete failed.");
         }
 
@@ -816,12 +1179,7 @@
     }
 
     async function verifyPin(pin) {
-      const response = await fetch(ADMIN_CONFIG.endpoint, {
-        method: "POST",
-        headers: { "Content-Type": "text/plain;charset=utf-8" },
-        body: JSON.stringify({ action: "verifyPin", pin: pin })
-      });
-      const body = await response.json();
+      const body = await postAdminPayload({ action: "verifyPin", pin: pin });
       return !!(body && body.ok);
     }
 
@@ -832,12 +1190,7 @@
       }
 
       try {
-        const response = await fetch(ADMIN_CONFIG.endpoint, {
-          method: "POST",
-          headers: { "Content-Type": "text/plain;charset=utf-8" },
-          body: JSON.stringify({ action: "pinStatus" })
-        });
-        const body = await response.json();
+        const body = await postAdminPayload({ action: "pinStatus" });
         pinConfigured = !!(body && body.pinConfigured);
 
         if (pinConfigured) {
@@ -859,12 +1212,7 @@
     }
 
     async function changePin(oldPin, newPin) {
-      const response = await fetch(ADMIN_CONFIG.endpoint, {
-        method: "POST",
-        headers: { "Content-Type": "text/plain;charset=utf-8" },
-        body: JSON.stringify({ action: "changePin", oldPin: oldPin, newPin: newPin })
-      });
-      const body = await response.json();
+      const body = await postAdminPayload({ action: "changePin", oldPin: oldPin, newPin: newPin });
       if (!body || !body.ok) {
         pinChangeStatus.textContent = body && body.error ? body.error : "Could not save PIN.";
         return false;

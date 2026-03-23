@@ -20,6 +20,8 @@ var DEFAULT_SETUP = {
   GITHUB_REPO: "Tact",
   GITHUB_BRANCH: "main",
   GITHUB_EVENTS_ROOT: "content/events",
+  GITHUB_GALLERY_DATA_PATH: "data/gallery.json",
+  GITHUB_GALLERY_IMAGES_ROOT: "images/gallery",
   ADMIN_PIN: "1234"
 };
 
@@ -68,6 +70,12 @@ function doPost(e) {
     }
     if (action === "deleteEvent") {
       return jsonOut(deleteEventFromGitHub(props, payload.slug), 200);
+    }
+    if (action === "listGallery") {
+      return jsonOut({ ok: true, galleries: listGalleryFromGitHub(props) }, 200);
+    }
+    if (action === "saveGallery") {
+      return jsonOut(saveGalleryToGitHub(props, payload.gallery, payload.images), 200);
     }
 
     var result = publishEventToGitHub(props, eventObj, posterObj);
@@ -259,6 +267,8 @@ function getRepoConfig(props) {
   var repo = String(props.getProperty("GITHUB_REPO") || "");
   var branch = String(props.getProperty("GITHUB_BRANCH") || "main");
   var eventsRoot = String(props.getProperty("GITHUB_EVENTS_ROOT") || "content/events");
+  var galleryDataPath = String(props.getProperty("GITHUB_GALLERY_DATA_PATH") || "data/gallery.json");
+  var galleryImagesRoot = String(props.getProperty("GITHUB_GALLERY_IMAGES_ROOT") || "images/gallery");
 
   if (!token || !owner || !repo) {
     throw new Error("Missing GitHub script properties.");
@@ -269,8 +279,176 @@ function getRepoConfig(props) {
     owner: owner,
     repo: repo,
     branch: branch,
-    eventsRoot: trimSlashes(eventsRoot)
+    eventsRoot: trimSlashes(eventsRoot),
+    galleryDataPath: trimSlashes(galleryDataPath),
+    galleryImagesRoot: trimSlashes(galleryImagesRoot)
   };
+}
+
+function listGalleryFromGitHub(props) {
+  var repo = getRepoConfig(props);
+  return readGalleryEntries(repo);
+}
+
+function saveGalleryToGitHub(props, galleryObj, imageList) {
+  var repo = getRepoConfig(props);
+  var gallery = galleryObj || {};
+  var images = Array.isArray(imageList) ? imageList : [];
+  var title = String(gallery.title || "").trim();
+  var date = normalizeDate(gallery.date);
+  var location = String(gallery.location || "").trim();
+  var slug = sanitizeSlug(gallery.slug || buildSlug(date, title));
+
+  if (!title || !date || !location) {
+    throw new Error("Missing required gallery fields.");
+  }
+  if (!images.length) {
+    throw new Error("At least one gallery image is required.");
+  }
+
+  var normalizedImages = [];
+  for (var i = 0; i < images.length; i++) {
+    var imageObj = images[i] || {};
+    var description = String(imageObj.description || "").trim();
+    if (!imageObj.data || !description) {
+      throw new Error("Each gallery image needs a file and description.");
+    }
+
+    var ext = inferPosterExtension(imageObj);
+    var imagePath = joinPath(repo.galleryImagesRoot, slug + "-" + padNumber(i + 1) + ext);
+    putBinaryFile(repo, imagePath, String(imageObj.data || ""), "Publish gallery image " + (i + 1) + " for " + slug);
+    normalizedImages.push({
+      url: imagePath,
+      description: description
+    });
+  }
+
+  removeOldGalleryImages(repo, slug, normalizedImages);
+
+  var galleryEntries = readGalleryEntries(repo);
+  var nextEntry = {
+    slug: slug,
+    title: title,
+    date: date,
+    location: location,
+    images: normalizedImages
+  };
+  var replaced = false;
+
+  for (var j = 0; j < galleryEntries.length; j++) {
+    if (String(galleryEntries[j].slug || "") === slug) {
+      galleryEntries[j] = nextEntry;
+      replaced = true;
+      break;
+    }
+  }
+  if (!replaced) {
+    galleryEntries.push(nextEntry);
+  }
+
+  galleryEntries.sort(function (left, right) {
+    return String(right.date || "").localeCompare(String(left.date || ""));
+  });
+
+  putTextFile(
+    repo,
+    repo.galleryDataPath,
+    buildGalleryJson(galleryEntries),
+    (replaced ? "Update" : "Create") + " gallery entry for " + slug
+  );
+
+  return {
+    ok: true,
+    slug: slug,
+    galleryPath: repo.galleryDataPath,
+    imageCount: normalizedImages.length
+  };
+}
+
+function readGalleryEntries(repo) {
+  var file = getFile(repo, repo.galleryDataPath);
+  if (!file.exists) return [];
+
+  var text = String(file.content || "").replace(/^\uFEFF/, "").trim();
+  if (!text) return [];
+
+  var parsed = JSON.parse(text);
+  var rows = Array.isArray(parsed) ? parsed : Array.isArray(parsed && parsed.galleries) ? parsed.galleries : [];
+  var list = [];
+
+  for (var i = 0; i < rows.length; i++) {
+    var item = rows[i] || {};
+    var title = String(item.title || "").trim();
+    var date = normalizeDate(item.date);
+    var location = String(item.location || "").trim();
+    var slug = sanitizeSlug(item.slug || buildSlug(date, title));
+    var images = Array.isArray(item.images) ? item.images : [];
+    var normalizedImages = [];
+
+    for (var j = 0; j < images.length; j++) {
+      var image = images[j] || {};
+      var url = trimSlashes(image.url || "");
+      var description = String(image.description || "").trim();
+      if (!url || !description) continue;
+      normalizedImages.push({
+        url: url,
+        description: description
+      });
+    }
+
+    if (!title || !date || !location || !normalizedImages.length) continue;
+
+    list.push({
+      slug: slug,
+      title: title,
+      date: date,
+      location: location,
+      images: normalizedImages
+    });
+  }
+
+  list.sort(function (left, right) {
+    return String(right.date || "").localeCompare(String(left.date || ""));
+  });
+
+  return list;
+}
+
+function buildGalleryJson(entries) {
+  return JSON.stringify(Array.isArray(entries) ? entries : [], null, 2) + "\n";
+}
+
+function removeOldGalleryImages(repo, slug, keepImages) {
+  var entries = [];
+  var keepMap = {};
+
+  for (var i = 0; i < keepImages.length; i++) {
+    keepMap[String(keepImages[i].url || "")] = true;
+  }
+
+  try {
+    entries = listDirectory(repo, repo.galleryImagesRoot);
+  } catch (err) {
+    if (String(err && err.message || "").indexOf("404") >= 0) return;
+    throw err;
+  }
+
+  for (var j = 0; j < entries.length; j++) {
+    var entry = entries[j];
+    if (!entry || entry.type !== "file") continue;
+    if (String(entry.name || "").indexOf(slug + "-") !== 0) continue;
+    if (keepMap[String(entry.path || "")]) continue;
+
+    githubRequest(repo, "delete", "contents/" + encodePath(entry.path), {
+      message: "Remove replaced gallery image " + entry.name,
+      sha: String(entry.sha || ""),
+      branch: repo.branch
+    });
+  }
+}
+
+function padNumber(value) {
+  return String(Number(value || 0)).padStart(2, "0");
 }
 
 function listDirectory(repo, path) {

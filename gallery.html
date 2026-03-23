@@ -1,0 +1,60 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Gallery - The Academy Trust (tAcT)</title>
+  <meta name="description" content="Photo gallery of events and outreach moments from The Academy Trust (tAcT).">
+  <link rel="stylesheet" href="shared-ribbon.css">
+  <link rel="stylesheet" href="assets/css/gallery.css">
+</head>
+<body data-page="gallery">
+  <div class="wrap">
+    <div id="site-header-root"></div>
+
+    <main id="main">
+      <section class="gallery-shell" aria-labelledby="gallery-heading">
+        <p class="gallery-kicker">Events &amp; Media</p>
+        <h1 id="gallery-heading">Gallery</h1>
+        <p>
+          Field visits, workshops, performances, and student moments from tAcT programmes.
+          Images load in batches as you scroll, and each frame opens in a larger in-page view.
+        </p>
+      </section>
+
+      <section class="gallery-grid-shell" aria-label="Image gallery">
+        <div id="gallery-grid" class="gallery-grid"></div>
+        <p id="gallery-empty" class="gallery-empty" hidden>No gallery images have been published yet.</p>
+        <div id="gallery-sentinel" class="gallery-sentinel" hidden>Loading more images…</div>
+      </section>
+    </main>
+
+    <footer aria-label="Site footer">
+      <p>&copy; <span id="year"></span> The Academy Trust (tAcT). All rights reserved.</p>
+    </footer>
+  </div>
+
+  <div id="gallery-modal" class="gallery-modal" hidden>
+    <div class="gallery-modal-dialog" role="dialog" aria-modal="true" aria-labelledby="gallery-modal-title">
+      <button id="gallery-modal-close" class="gallery-modal-close" type="button" aria-label="Close gallery modal">&times;</button>
+      <div class="gallery-modal-media">
+        <img id="gallery-modal-image" src="" alt="">
+      </div>
+      <div class="gallery-modal-copy">
+        <h2 id="gallery-modal-title"></h2>
+        <div class="gallery-modal-meta">
+          <span id="gallery-modal-date"></span>
+          <span id="gallery-modal-location"></span>
+        </div>
+        <p id="gallery-modal-description"></p>
+      </div>
+    </div>
+  </div>
+
+  <script src="assets/js/site-chrome.js?v=20260321"></script>
+  <script src="assets/js/events-config.js"></script>
+  <script src="assets/js/gallery-data.js"></script>
+  <script src="assets/js/gallery-page.js"></script>
+  <script src="assets/js/page-router.js"></script>
+</body>
+</html>
