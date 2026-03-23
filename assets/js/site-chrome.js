@@ -145,6 +145,12 @@
         trigger.setAttribute("aria-expanded", "true");
         openItem = item;
       });
+
+      menu.addEventListener("click", function (event) {
+        var link = event.target.closest("a[href]");
+        if (!link) return;
+        closeMenu(item);
+      });
     });
 
     document.addEventListener("click", function (event) {

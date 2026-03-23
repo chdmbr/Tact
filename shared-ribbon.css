@@ -22,7 +22,7 @@ html {
   left: 50%;
   top: 12px;
   transform: translateX(-50%);
-  width: min(calc(100% - 40px), 1160px);
+  width: 1160px;
   z-index: 60;
   margin: 0;
   padding: 10px 22px;
@@ -78,7 +78,7 @@ html {
 }
 
 .site-logo {
-  height: clamp(34px, 3.9vw, 46px);
+  height: 46px;
   width: auto;
   border-radius: 0;
   box-shadow: none;
@@ -299,8 +299,8 @@ html {
 .nav-menu {
   position: absolute;
   top: 100%;
-  left: 50%;
-  transform: translate(-50%, 4px);
+  left: 0;
+  transform: translateY(4px);
   margin-top: 4px;
   min-width: 200px;
   padding: 8px 0;
@@ -319,7 +319,7 @@ html {
 .nav-item--open .nav-menu {
   opacity: 1;
   pointer-events: auto;
-  transform: translate(-50%, 0);
+  transform: translateY(0);
 }
 
 .nav-menu a {
@@ -434,116 +434,6 @@ html {
 .nav-link--primary:focus-visible {
   outline: 2px solid var(--green);
   outline-offset: 2px;
-}
-
-/* Responsive Design */
-@media (max-width: 900px) {
-  .site-header {
-    width: min(calc(100% - 32px), 1160px);
-    padding: 8px 16px;
-  }
-
-  .site-header-inner {
-    flex-wrap: wrap;
-    row-gap: 10px;
-  }
-
-  .site-header-center {
-    order: 3;
-    width: 100%;
-    justify-content: flex-start;
-  }
-
-  .site-nav {
-    width: 100%;
-  }
-
-  .nav-list {
-    flex-wrap: wrap;
-    justify-content: flex-start;
-    row-gap: 8px;
-  }
-
-  .nav-trigger {
-    font-size: 12px;
-    padding: 6px 10px;
-  }
-
-  .site-brand-title {
-    font-size: 20px;
-  }
-}
-
-@media (max-width: 600px) {
-  .site-header {
-    top: 8px;
-    width: calc(100% - 24px);
-    padding: 8px 12px;
-    border-radius: 20px;
-  }
-
-  .site-header-inner {
-    gap: 10px;
-  }
-
-  .site-header-left,
-  .site-header-center,
-  .site-header-right {
-    width: 100%;
-  }
-
-  .site-header-left,
-  .site-header-right {
-    justify-content: center;
-  }
-
-  .brand-link {
-    gap: 10px;
-  }
-
-  .site-brand-text {
-    align-items: flex-start;
-  }
-
-  .site-logo {
-    height: 38px;
-  }
-
-  .site-brand-title {
-    font-size: 18px;
-  }
-
-  .site-brand-subtitle {
-    font-size: 10px;
-  }
-
-  .nav-list {
-    display: flex;
-    flex-wrap: wrap;
-    justify-content: center;
-    gap: 8px;
-  }
-
-  .nav-item {
-    width: auto;
-  }
-
-  .nav-trigger,
-  .nav-link--primary {
-    width: auto;
-    justify-content: center;
-  }
-
-  .nav-menu {
-    left: 0;
-    right: 0;
-    min-width: 0;
-    transform: translateY(4px);
-  }
-
-  .nav-item--open .nav-menu {
-    transform: translateY(0);
-  }
 }
 
 /* Desktop-only layout lock */

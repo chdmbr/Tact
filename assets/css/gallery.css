@@ -57,7 +57,7 @@ main {
 .gallery-grid-head h1 {
   margin: 0;
   color: var(--green);
-  font-size: clamp(28px, 3vw, 36px);
+  font-size: 36px;
   letter-spacing: -0.04em;
 }
 
@@ -151,7 +151,7 @@ main {
 
 .gallery-modal-dialog {
   position: relative;
-  width: min(90vw, 1180px);
+  width: 1180px;
   max-height: 90vh;
   overflow: hidden;
   background: #fcfcfa;
@@ -241,61 +241,6 @@ footer[aria-label="Site footer"] {
   font-size: 13px;
 }
 
-@media (max-width: 900px) {
-  .wrap {
-    padding: 16px;
-  }
-
-  .gallery-grid {
-    grid-template-columns: repeat(auto-fill, minmax(200px, 1fr));
-  }
-
-  .gallery-modal-dialog {
-    grid-template-columns: 1fr;
-    max-height: 90vh;
-  }
-}
-
-@media (max-width: 600px) {
-  .wrap {
-    padding: 12px;
-  }
-
-  main {
-    margin-top: 18px;
-  }
-
-  .gallery-grid-shell {
-    border-radius: 14px;
-  }
-
-  .gallery-grid-shell {
-    padding: 12px;
-  }
-
-  .gallery-grid {
-    grid-template-columns: 1fr 1fr;
-    gap: 12px;
-  }
-
-  .gallery-card,
-  .gallery-card-image {
-    min-height: 180px;
-  }
-
-  .gallery-modal {
-    padding: 12px;
-  }
-
-  .gallery-modal-copy {
-    padding: 18px 16px 16px;
-  }
-
-  .gallery-modal-copy h2 {
-    font-size: 24px;
-  }
-}
-
 /* Desktop-only layout lock */
 .wrap {
   width: 1200px;
@@ -306,6 +251,10 @@ footer[aria-label="Site footer"] {
 
 main {
   margin-top: 24px;
+}
+
+.gallery-grid-head h1 {
+  font-size: 36px;
 }
 
 .gallery-grid {

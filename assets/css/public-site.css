@@ -14,8 +14,8 @@
   --shadow-soft: 0 18px 60px rgba(20, 30, 20, 0.04);
   --line-soft: rgba(9, 9, 9, 0.02);
   --surface-top-line: rgba(184, 134, 11, 0.2);
-  --heading-1: clamp(30px, 3vw, 36px);
-  --heading-2: clamp(22px, 2.2vw, 24px);
+  --heading-1: 36px;
+  --heading-2: 24px;
   --heading-3: 18px;
   --body-copy: 15px;
 }
@@ -165,39 +165,6 @@ button:focus-visible {
   margin: 0;
   font-size: 13px;
   color: inherit;
-}
-
-@media (max-width: 900px) {
-  .wrap {
-    padding: 16px;
-  }
-
-  .surface {
-    padding: 18px;
-  }
-}
-
-@media (max-width: 600px) {
-  .wrap {
-    padding: var(--page-pad-mobile);
-  }
-
-  main {
-    margin-top: 18px;
-  }
-
-  .surface {
-    padding: 14px;
-    border-radius: 14px;
-  }
-
-  .btn {
-    width: 100%;
-  }
-
-  .site-footer {
-    padding: 18px 0 22px;
-  }
 }
 
 /* Desktop-only layout lock */

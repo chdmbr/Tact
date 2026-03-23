@@ -58,7 +58,7 @@ main {
 .calendar-title h1 {
   margin: 0 0 4px;
   color: var(--green);
-  font-size: clamp(28px, 3vw, 36px);
+  font-size: 36px;
   letter-spacing: -0.04em;
 }
 
@@ -222,7 +222,7 @@ main {
 
 .calendar-modal-dialog {
   position: relative;
-  width: min(90vw, 1180px);
+  width: 1180px;
   max-height: 90vh;
   overflow: auto;
   background: #fcfcfa;
@@ -381,108 +381,6 @@ footer[aria-label="Site footer"] {
   font-size: 13px;
 }
 
-@media (max-width: 1100px) {
-  .calendar-grid,
-  .calendar-weekdays {
-    gap: 8px;
-  }
-
-  .calendar-day {
-    min-height: 144px;
-  }
-}
-
-@media (max-width: 900px) {
-  .wrap {
-    padding: 16px;
-  }
-
-  .calendar-toolbar {
-    flex-direction: column;
-    align-items: stretch;
-  }
-
-  .calendar-nav {
-    justify-content: space-between;
-  }
-
-  .calendar-month-label {
-    min-width: 0;
-  }
-
-  .calendar-detail-layout {
-    grid-template-columns: 1fr;
-    max-height: none;
-  }
-}
-
-@media (max-width: 700px) {
-  .calendar-weekdays,
-  .calendar-grid {
-    gap: 6px;
-  }
-
-  .calendar-weekdays span {
-    padding: 8px 2px;
-    font-size: 11px;
-  }
-
-  .calendar-day {
-    min-height: 124px;
-    padding: 8px;
-    border-radius: 14px;
-  }
-
-  .calendar-preview-image {
-    height: 64px;
-  }
-
-  .calendar-day-count {
-    font-size: 11px;
-  }
-}
-
-@media (max-width: 600px) {
-  .wrap {
-    padding: 12px;
-  }
-
-  main {
-    margin-top: 18px;
-  }
-
-  .calendar-shell {
-    padding: 14px;
-    border-radius: 14px;
-  }
-
-  .calendar-nav button {
-    padding: 10px 12px;
-  }
-
-  .calendar-month-label {
-    font-size: 15px;
-  }
-
-  .calendar-modal {
-    padding: 10px;
-  }
-
-  .calendar-modal-dialog {
-    padding: 16px;
-    border-radius: 18px;
-  }
-
-  .calendar-modal-header h2,
-  .calendar-detail-copy h2 {
-    font-size: 24px;
-  }
-
-  .calendar-date-grid {
-    grid-template-columns: 1fr 1fr;
-  }
-}
-
 /* Desktop-only layout lock */
 .wrap {
   width: 1200px;
@@ -493,6 +391,10 @@ footer[aria-label="Site footer"] {
 
 main {
   margin-top: 24px;
+}
+
+.calendar-title h1 {
+  font-size: 36px;
 }
 
 .calendar-shell {

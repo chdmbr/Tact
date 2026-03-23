@@ -828,99 +828,6 @@
         border-color: rgba(10, 122, 58, 0.35);
       }
 
-      /* Responsive adjustments */
-      @media (max-width: 900px) {
-        .wrap {
-          padding: 16px;
-        }
-
-        h1 {
-          font-size: 24px;
-        }
-
-        .arrival {
-          grid-template-columns: minmax(0, 1fr);
-        }
-
-        .home-events-layout {
-          grid-template-columns: 1fr;
-        }
-
-        .home-vertical-window {
-          height: auto;
-          max-height: none;
-        }
-
-        .home-upcoming-card {
-          height: auto;
-          grid-template-columns: minmax(96px, 34%) minmax(0, 1fr);
-        }
-
-        .photo-grid {
-          grid-template-columns: repeat(2, minmax(0, 1fr));
-        }
-
-        .flipping-images {
-          grid-template-columns: repeat(2, minmax(0, 1fr));
-          gap: 14px;
-        }
-      }
-
-      @media (max-width: 600px) {
-        .wrap {
-          padding: 12px;
-        }
-
-        h1 {
-          font-size: 22px;
-        }
-
-        .outreach-grid {
-          grid-template-columns: minmax(0, 1fr);
-        }
-
-        .photo-grid {
-          grid-template-columns: minmax(0, 1fr);
-        }
-
-        .surface {
-          padding: 16px 14px;
-        }
-
-        .hero-visual {
-          min-height: 220px;
-        }
-
-        .home-vertical-window,
-        .home-upcoming-card {
-          height: auto;
-          min-height: 0;
-        }
-
-        .home-upcoming-copy {
-          padding: 12px;
-        }
-
-        .home-events-item,
-        .home-events-item--past {
-          grid-template-columns: 60px minmax(0, 1fr);
-        }
-
-        .home-events-item img,
-        .home-events-item--past img {
-          width: 60px;
-          height: 80px;
-        }
-
-        .flipping-images {
-          grid-template-columns: minmax(0, 1fr);
-        }
-
-        .flip-box {
-          height: 200px;
-        }
-      }
-
       /* Respect reduced motion preferences */
       @media (prefers-reduced-motion: reduce) {
         html {
@@ -985,13 +892,14 @@
         min-height: 320px;
       }
 
-      .home-vertical-window,
       .home-upcoming-card {
-        height: auto;
+        height: 286px;
+        grid-template-columns: minmax(106px, 36%) minmax(0, 1fr);
       }
 
-      .home-upcoming-card {
-        grid-template-columns: minmax(106px, 36%) minmax(0, 1fr);
+      .home-vertical-window {
+        height: 286px;
+        max-height: none;
       }
 
       .home-events-item,
