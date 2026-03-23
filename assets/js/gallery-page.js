@@ -6,9 +6,8 @@
     batchSize: 12,
     observer: null,
     modalOpen: false,
-    initialized: false,
     initInFlight: null,
-    globalBound: false
+    eventsBound: false
   };
 
   function flattenEntries(entries) {
@@ -49,27 +48,13 @@
     return text.slice(0, Math.max(0, limit - 1)).trimEnd() + "…";
   }
 
-  function renderNextBatch() {
-    var grid = document.getElementById("gallery-grid");
-    var empty = document.getElementById("gallery-empty");
-    if (!grid || !empty) return;
-
-    if (!state.items.length) {
-      empty.hidden = false;
-      return;
-    }
-
-    empty.hidden = true;
-    var next = state.items.slice(state.rendered, state.rendered + state.batchSize);
-    next.forEach(function (item) {
-      grid.appendChild(buildGalleryCard(item));
-    });
-    state.rendered += next.length;
-
-    var sentinel = document.getElementById("gallery-sentinel");
-    if (sentinel) {
-      sentinel.hidden = state.rendered >= state.items.length;
-    }
+  function escapeHtml(value) {
+    return String(value || "")
+      .replace(/&/g, "&amp;")
+      .replace(/</g, "&lt;")
+      .replace(/>/g, "&gt;")
+      .replace(/"/g, "&quot;")
+      .replace(/'/g, "&#39;");
   }
 
   function buildGalleryCard(item) {
@@ -89,7 +74,7 @@
     var overlay = document.createElement("span");
     overlay.className = "gallery-card-overlay";
     overlay.innerHTML =
-      '<strong>' + escapeHtml(item.title) + "</strong>" +
+      "<strong>" + escapeHtml(item.title) + "</strong>" +
       "<span>" + escapeHtml(formatDate(item.date)) + "</span>" +
       "<span>" + escapeHtml(item.location) + "</span>" +
       "<span>" + escapeHtml(shortText(item.description, 120)) + "</span>";
@@ -99,60 +84,42 @@
     return button;
   }
 
-  function openModal(item) {
-    var modal = document.getElementById("gallery-modal");
-    var dialog = modal ? modal.querySelector(".gallery-modal-dialog") : null;
-    var image = document.getElementById("gallery-modal-image");
-    if (!modal) return;
+  function renderNextBatch() {
+    var grid = document.getElementById("gallery-grid");
+    var empty = document.getElementById("gallery-empty");
+    var sentinel = document.getElementById("gallery-sentinel");
+    if (!grid || !empty) return;
 
-    image.src = item.url;
-    image.alt = item.title;
-    document.getElementById("gallery-modal-title").textContent = item.title;
-    document.getElementById("gallery-modal-date").textContent = formatDate(item.date);
-    document.getElementById("gallery-modal-location").textContent = item.location;
-    document.getElementById("gallery-modal-description").textContent = item.description;
-    if (dialog) {
-      dialog.style.setProperty("--gallery-modal-media-height", "90vh");
+    if (!state.items.length) {
+      empty.hidden = false;
+      if (sentinel) sentinel.hidden = true;
+      return;
     }
-    modal.hidden = false;
-    document.body.classList.add("modal-open");
-    state.modalOpen = true;
-    syncModalHeight();
+
+    empty.hidden = true;
+    state.items.slice(state.rendered, state.rendered + state.batchSize).forEach(function (item) {
+      grid.appendChild(buildGalleryCard(item));
+    });
+    state.rendered = Math.min(state.items.length, state.rendered + state.batchSize);
+
+    if (sentinel) {
+      sentinel.hidden = state.rendered >= state.items.length;
+    }
   }
 
-  function closeModal() {
-    var modal = document.getElementById("gallery-modal");
-    var dialog = modal ? modal.querySelector(".gallery-modal-dialog") : null;
-    if (!modal) return;
-    modal.hidden = true;
-    if (dialog) {
-      dialog.style.removeProperty("--gallery-modal-media-height");
-    }
-    document.body.classList.remove("modal-open");
-    state.modalOpen = false;
-  }
+  function resetGrid() {
+    var grid = document.getElementById("gallery-grid");
+    var empty = document.getElementById("gallery-empty");
+    var sentinel = document.getElementById("gallery-sentinel");
 
-  function syncModalHeight() {
-    if (!state.modalOpen) return;
+    if (grid) grid.innerHTML = "";
+    if (empty) empty.hidden = true;
+    if (sentinel) sentinel.hidden = true;
 
-    var dialog = document.querySelector("#gallery-modal .gallery-modal-dialog");
-    var image = document.getElementById("gallery-modal-image");
-    if (!dialog || !image) return;
-
-    var apply = function () {
-      var rect = image.getBoundingClientRect();
-      var nextHeight = Math.max(240, Math.round(rect.height || 0));
-      if (nextHeight) {
-        dialog.style.setProperty("--gallery-modal-media-height", nextHeight + "px");
-      }
-    };
-
-    if (image.complete) {
-      window.requestAnimationFrame(apply);
-    } else {
-      image.onload = function () {
-        apply();
-      };
+    state.rendered = 0;
+    if (state.observer) {
+      state.observer.disconnect();
+      state.observer = null;
     }
   }
 
@@ -162,6 +129,7 @@
 
     if (state.observer) {
       state.observer.disconnect();
+      state.observer = null;
     }
 
     if (!window.IntersectionObserver) {
@@ -180,103 +148,144 @@
     state.observer.observe(sentinel);
   }
 
-  async function initGalleryPage() {
-    if (state.initInFlight) return state.initInFlight;
-    state.initInFlight = runGalleryInit().finally(function () {
-      state.initInFlight = null;
-    });
-    return state.initInFlight;
+  function syncModalHeight() {
+    if (!state.modalOpen) return;
+
+    var dialog = document.querySelector("#gallery-modal .gallery-modal-dialog");
+    var image = document.getElementById("gallery-modal-image");
+    if (!dialog || !image) return;
+
+    var apply = function () {
+      var rect = image.getBoundingClientRect();
+      var nextHeight = Math.max(240, Math.round(rect.height || 0));
+      dialog.style.setProperty("--gallery-modal-media-height", nextHeight + "px");
+    };
+
+    if (image.complete) {
+      window.requestAnimationFrame(apply);
+      return;
+    }
+
+    image.onload = apply;
   }
 
-  async function runGalleryInit() {
-    if (window.TACT_CHROME) {
-      if (typeof window.TACT_CHROME.ensureHeader === "function") {
-        window.TACT_CHROME.ensureHeader();
-      } else {
-        window.TACT_CHROME.renderHeader();
-      }
-      window.TACT_CHROME.initDropdowns();
-    }
-
-    var year = document.getElementById("year");
-    if (year) year.textContent = String(new Date().getFullYear());
-
-    var entries = await window.loadTactGalleryData();
-    state.items = flattenEntries(entries);
-    state.itemsById = {};
-    state.items.forEach(function (item) {
-      state.itemsById[item.id] = item;
-    });
-    state.rendered = 0;
-
-    var grid = document.getElementById("gallery-grid");
-    if (grid) {
-      grid.innerHTML = "";
-      if (!grid.dataset.bound) {
-        grid.dataset.bound = "true";
-        grid.addEventListener("click", function (event) {
-          var card = event.target.closest(".gallery-card");
-          if (!card) return;
-          var item = state.itemsById[String(card.dataset.itemId || "")];
-          if (item) {
-            openModal(item);
-          }
-        });
-      }
-    }
-
-    renderNextBatch();
-    setupObserver();
-    bindGalleryGlobals();
-    state.initialized = true;
-  }
-
-  function bindGalleryGlobals() {
-    if (state.globalBound) return;
-    state.globalBound = true;
-
-    var closeButton = document.getElementById("gallery-modal-close");
-    if (closeButton) {
-      closeButton.addEventListener("click", closeModal);
-    }
-
+  function openModal(item) {
     var modal = document.getElementById("gallery-modal");
-    if (modal) {
-      modal.addEventListener("click", function (event) {
-        if (event.target === modal || event.target.hasAttribute("data-modal-dismiss")) {
+    var dialog = modal ? modal.querySelector(".gallery-modal-dialog") : null;
+    var image = document.getElementById("gallery-modal-image");
+    if (!modal || !dialog || !image || !item) return;
+
+    image.src = item.url;
+    image.alt = item.title;
+    document.getElementById("gallery-modal-title").textContent = item.title;
+    document.getElementById("gallery-modal-date").textContent = formatDate(item.date);
+    document.getElementById("gallery-modal-location").textContent = item.location;
+    document.getElementById("gallery-modal-description").textContent = item.description;
+    dialog.style.setProperty("--gallery-modal-media-height", "90vh");
+
+    modal.hidden = false;
+    document.body.classList.add("modal-open");
+    state.modalOpen = true;
+    syncModalHeight();
+  }
+
+  function closeModal() {
+    var modal = document.getElementById("gallery-modal");
+    var dialog = modal ? modal.querySelector(".gallery-modal-dialog") : null;
+    if (!modal) return;
+
+    modal.hidden = true;
+    if (dialog) {
+      dialog.style.removeProperty("--gallery-modal-media-height");
+    }
+    document.body.classList.remove("modal-open");
+    state.modalOpen = false;
+  }
+
+  function bindEvents() {
+    if (state.eventsBound) return;
+    state.eventsBound = true;
+
+    document.addEventListener("click", function (event) {
+      if (document.body && document.body.dataset.page !== "gallery") return;
+
+      var grid = document.getElementById("gallery-grid");
+      if (grid && grid.contains(event.target)) {
+        var card = event.target.closest(".gallery-card");
+        if (!card) return;
+
+        event.preventDefault();
+        var item = state.itemsById[String(card.dataset.itemId || "")];
+        if (item) {
+          openModal(item);
+        }
+        return;
+      }
+
+      var modal = document.getElementById("gallery-modal");
+      if (modal && !modal.hidden) {
+        if (event.target === modal || event.target.closest("[data-modal-dismiss]")) {
+          event.preventDefault();
           closeModal();
         }
-      });
-    }
+      }
+    });
+
+    document.addEventListener("keydown", function (event) {
+      if (event.key === "Escape" && state.modalOpen) {
+        closeModal();
+      }
+    });
+
+    window.addEventListener("resize", syncModalHeight);
   }
 
-  document.addEventListener("keydown", function (event) {
-    if (event.key === "Escape" && state.modalOpen) {
+  async function initGalleryPage() {
+    if (state.initInFlight) return state.initInFlight;
+
+    state.initInFlight = (async function () {
+      bindEvents();
+
+      if (window.TACT_CHROME) {
+        if (typeof window.TACT_CHROME.ensureHeader === "function") {
+          window.TACT_CHROME.ensureHeader();
+        } else {
+          window.TACT_CHROME.renderHeader();
+        }
+        window.TACT_CHROME.initDropdowns();
+      }
+
+      var year = document.getElementById("year");
+      if (year) year.textContent = String(new Date().getFullYear());
+
+      resetGrid();
       closeModal();
-    }
-  });
 
-  window.addEventListener("resize", syncModalHeight);
+      var entries = await window.loadTactGalleryData();
+      state.items = flattenEntries(entries);
+      state.itemsById = {};
+      state.items.forEach(function (item) {
+        state.itemsById[item.id] = item;
+      });
 
-  function escapeHtml(value) {
-    return String(value || "")
-      .replace(/&/g, "&amp;")
-      .replace(/</g, "&lt;")
-      .replace(/>/g, "&gt;")
-      .replace(/"/g, "&quot;")
-      .replace(/'/g, "&#39;");
+      renderNextBatch();
+      setupObserver();
+    })().finally(function () {
+      state.initInFlight = null;
+    });
+
+    return state.initInFlight;
   }
-
-  window.TACT_PAGE_RUNTIME = window.TACT_PAGE_RUNTIME || {};
-  window.TACT_PAGE_RUNTIME.initGalleryPage = initGalleryPage;
-
-  window.initGalleryPage = initGalleryPage;
 
   function bootGalleryPage() {
     if (document.body && document.body.dataset.page === "gallery") {
       initGalleryPage();
     }
   }
+
+  window.TACT_PAGE_RUNTIME = window.TACT_PAGE_RUNTIME || {};
+  window.TACT_PAGE_RUNTIME.initGalleryPage = initGalleryPage;
+  window.initGalleryPage = initGalleryPage;
 
   if (document.readyState === "loading") {
     document.addEventListener("DOMContentLoaded", bootGalleryPage, { once: true });

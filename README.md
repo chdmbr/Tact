@@ -101,6 +101,7 @@ Behavior:
 - Reads gallery data from `data/gallery.json`
 - Flattens gallery entries into an image-only responsive grid
 - Loads the first batch, then loads more images on scroll using `IntersectionObserver`
+- Uses delegated click handling on the gallery grid so dynamically rendered cards open the modal reliably on first load
 - Shows hover overlays with title, date, location, and short description
 - Opens a large in-page modal with full image and full metadata
 - Uses lazy-loaded images and in-page modals without URL changes
@@ -122,6 +123,7 @@ Behavior:
 - Renders a month grid with previous/next month controls
 - Groups gallery images by date
 - Shows rotating image previews inside date cells when that date has gallery images
+- Uses delegated click handling for both the month grid and the date modal grid so both modal levels work reliably on first load
 - Shows hover overlays with title, date, location, and short description
 - Opens a first modal with all images for the selected date
 - Opens a second modal with the selected full-size image and full metadata
@@ -167,6 +169,7 @@ Shared navigation and routing were updated so the new pages behave like the exis
   - Loads the right scripts for those routes
   - Runs the correct page initializer on route changes
   - Uses versioned gallery/calendar asset URLs so new modal logic is not blocked by stale browser cache
+  - Reuses the same runtime initializers after client-side navigation instead of rebinding per-card handlers
 - [sw.js](/home/chi/Tact/sw.js)
   - Uses network-first fetches for HTML, CSS, JS, JSON, the event feed, and `gallery.json`
   - Claims updated clients immediately so gallery/calendar modal fixes do not depend on a hard refresh
