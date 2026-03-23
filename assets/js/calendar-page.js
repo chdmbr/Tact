@@ -185,6 +185,7 @@
       var button = document.createElement("button");
       button.type = "button";
       button.className = "calendar-modal-card";
+      button.dataset.itemIndex = String(state.activeDateItems.indexOf(item));
 
       var image = document.createElement("img");
       image.src = item.url;
@@ -200,9 +201,6 @@
 
       button.appendChild(image);
       button.appendChild(meta);
-      button.addEventListener("click", function () {
-        openDetailModal(item);
-      });
       grid.appendChild(button);
     });
 
@@ -308,6 +306,8 @@
       renderCalendar();
     });
 
+    bindDateGridSelection();
+
     bindModalDismiss("calendar-date-modal", closeDateModal);
     bindModalDismiss("calendar-detail-modal", closeDetailModal);
   }
@@ -326,6 +326,26 @@
     modal.addEventListener("click", function (event) {
       if (event.target === modal || event.target.hasAttribute("data-modal-dismiss")) {
         closeHandler();
+      }
+    });
+  }
+
+  function bindDateGridSelection() {
+    var grid = document.getElementById("calendar-date-grid");
+    if (!grid || grid.dataset.bound) return;
+    grid.dataset.bound = "true";
+
+    grid.addEventListener("click", function (event) {
+      var card = event.target.closest(".calendar-modal-card");
+      if (!card) return;
+
+      event.preventDefault();
+      event.stopPropagation();
+
+      var index = Number(card.dataset.itemIndex);
+      var item = state.activeDateItems[index];
+      if (item) {
+        openDetailModal(item);
       }
     });
   }
