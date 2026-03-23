@@ -69,6 +69,10 @@
     return Object.prototype.hasOwnProperty.call(ROUTE_SCRIPTS, routeKeyFromUrl(url));
   }
 
+  function shouldBypassClientRouting(routeKey) {
+    return routeKey === "gallery.html" || routeKey === "calendar.html";
+  }
+
   function syncHead(doc) {
     document.title = doc.title || document.title;
 
@@ -284,6 +288,8 @@
 
     var url = new URL(href, window.location.href);
     if (url.origin !== window.location.origin) return;
+    var routeKey = routeKeyFromUrl(url.href);
+    if (shouldBypassClientRouting(routeKey)) return;
     if (!isSupportedRoute(url.href)) return;
 
     event.preventDefault();

@@ -170,6 +170,7 @@ Shared navigation and routing were updated so the new pages behave like the exis
   - Runs the correct page initializer on route changes
   - Uses versioned gallery/calendar asset URLs so new modal logic is not blocked by stale browser cache
   - Reuses the same runtime initializers after client-side navigation instead of rebinding per-card handlers
+  - Intentionally bypasses client-side routing for `gallery.html` and `calendar.html` so those pages always load fresh page HTML and page-specific modal code directly
 - [sw.js](/home/chi/Tact/sw.js)
   - Uses network-first fetches for HTML, CSS, JS, JSON, the event feed, and `gallery.json`
   - Claims updated clients immediately so gallery/calendar modal fixes do not depend on a hard refresh
