@@ -164,6 +164,8 @@ Shared navigation and routing were updated so the new pages behave like the exis
 - [assets/js/site-chrome.js](/home/chi/Tact/assets/js/site-chrome.js)
   - Adds `Gallery` and `Calendar` links under `Events & Media`
   - Renders the shared ribbon header and shared footer
+  - Keeps dropdown behavior stable across routed page reinitialization without stacking duplicate document listeners
+  - Is loaded with a versioned asset URL on public pages so shared header fixes are not blocked by stale browser cache
 - [assets/js/page-router.js](/home/chi/Tact/assets/js/page-router.js)
   - Registers `gallery.html` and `calendar.html`
   - Loads the right scripts for those routes

@@ -1,4 +1,9 @@
 (function () {
+  var chromeState = {
+    globalDropdownBound: false,
+    openItem: null
+  };
+
   function syncHeaderOffset() {
     var root = document.getElementById("site-header-root");
     if (!root) return;
@@ -10,8 +15,7 @@
       return;
     }
 
-    var topOffset = window.innerWidth <= 600 ? 8 : 12;
-    var totalOffset = Math.ceil(header.offsetHeight + topOffset);
+    var totalOffset = Math.ceil(header.offsetHeight + 12);
     root.style.minHeight = totalOffset + "px";
     document.documentElement.style.setProperty("--site-header-offset", totalOffset + "px");
   }
@@ -117,14 +121,13 @@
     root.dataset.dropdownInit = "true";
 
     var navItems = document.querySelectorAll(".nav-item--has-menu");
-    var openItem = null;
 
     function closeMenu(item) {
       if (!item) return;
       item.classList.remove("nav-item--open");
       var trigger = item.querySelector('.nav-trigger[aria-haspopup="true"]');
       if (trigger) trigger.setAttribute("aria-expanded", "false");
-      if (openItem === item) openItem = null;
+      if (chromeState.openItem === item) chromeState.openItem = null;
     }
 
     navItems.forEach(function (item) {
@@ -140,10 +143,10 @@
           closeMenu(item);
           return;
         }
-        if (openItem && openItem !== item) closeMenu(openItem);
+        if (chromeState.openItem && chromeState.openItem !== item) closeMenu(chromeState.openItem);
         item.classList.add("nav-item--open");
         trigger.setAttribute("aria-expanded", "true");
-        openItem = item;
+        chromeState.openItem = item;
       });
 
       menu.addEventListener("click", function (event) {
@@ -153,13 +156,21 @@
       });
     });
 
-    document.addEventListener("click", function (event) {
-      if (openItem && !openItem.contains(event.target)) closeMenu(openItem);
-    });
+    if (!chromeState.globalDropdownBound) {
+      chromeState.globalDropdownBound = true;
 
-    document.addEventListener("keydown", function (event) {
-      if (event.key === "Escape" && openItem) closeMenu(openItem);
-    });
+      document.addEventListener("click", function (event) {
+        if (chromeState.openItem && !chromeState.openItem.contains(event.target)) {
+          closeMenu(chromeState.openItem);
+        }
+      });
+
+      document.addEventListener("keydown", function (event) {
+        if (event.key === "Escape" && chromeState.openItem) {
+          closeMenu(chromeState.openItem);
+        }
+      });
+    }
   }
 
   window.TACT_CHROME = {
