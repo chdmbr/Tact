@@ -199,3 +199,37 @@ button:focus-visible {
     padding: 18px 0 22px;
   }
 }
+
+/* Desktop-only layout lock */
+html,
+body {
+  min-width: 1240px;
+}
+
+body {
+  overflow-x: auto;
+}
+
+.wrap {
+  width: 1200px;
+  max-width: none;
+  min-width: 1200px;
+  padding: 20px;
+}
+
+main {
+  margin-top: 24px;
+}
+
+.surface {
+  padding: 22px;
+  border-radius: 18px;
+}
+
+.btn {
+  width: auto;
+}
+
+.site-footer {
+  padding: 22px 0 20px;
+}

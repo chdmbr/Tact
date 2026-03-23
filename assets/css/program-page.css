@@ -251,3 +251,51 @@ footer {
     padding: 18px 12px 24px;
   }
 }
+
+/* Desktop-only layout lock */
+.wrap {
+  width: 1200px;
+  max-width: none;
+  min-width: 1200px;
+  padding: 20px;
+}
+
+main {
+  margin-top: 24px;
+}
+
+h1 {
+  font-size: 34px;
+}
+
+h2 {
+  font-size: 22px;
+}
+
+.surface {
+  padding: 24px;
+}
+
+.hero-section {
+  padding: 56px 24px;
+  border-radius: 22px;
+  margin-bottom: 32px;
+}
+
+.image-grid {
+  grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+}
+
+.gallery-card {
+  padding: 16px;
+  border-radius: 14px;
+}
+
+.btn {
+  width: auto;
+  margin: 8px;
+}
+
+footer {
+  padding: 24px;
+}

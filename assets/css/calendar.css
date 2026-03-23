@@ -482,3 +482,78 @@ footer[aria-label="Site footer"] {
     grid-template-columns: 1fr 1fr;
   }
 }
+
+/* Desktop-only layout lock */
+.wrap {
+  width: 1200px;
+  max-width: none;
+  min-width: 1200px;
+  padding: 20px;
+}
+
+main {
+  margin-top: 24px;
+}
+
+.calendar-shell {
+  padding: 16px;
+  border-radius: 18px;
+}
+
+.calendar-toolbar {
+  flex-direction: row;
+  align-items: center;
+}
+
+.calendar-nav {
+  justify-content: flex-start;
+}
+
+.calendar-month-label {
+  min-width: 200px;
+  font-size: 17px;
+}
+
+.calendar-grid,
+.calendar-weekdays {
+  gap: 10px;
+}
+
+.calendar-day {
+  min-height: 160px;
+  padding: 12px;
+  border-radius: 18px;
+}
+
+.calendar-preview-image {
+  height: 92px;
+}
+
+.calendar-day-count {
+  font-size: 12px;
+}
+
+.calendar-modal {
+  min-width: 1240px;
+  padding: 18px;
+}
+
+.calendar-modal-dialog {
+  width: 1180px;
+  max-width: none;
+  padding: 18px;
+  border-radius: 28px;
+}
+
+#calendar-detail-modal .calendar-modal-dialog {
+  padding: 0;
+}
+
+.calendar-date-grid {
+  grid-template-columns: repeat(auto-fill, minmax(220px, 1fr));
+}
+
+.calendar-detail-layout {
+  grid-template-columns: minmax(0, 1.6fr) minmax(280px, 0.9fr);
+  max-height: 76vh;
+}

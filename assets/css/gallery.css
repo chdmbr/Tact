@@ -295,3 +295,29 @@ footer[aria-label="Site footer"] {
     font-size: 24px;
   }
 }
+
+/* Desktop-only layout lock */
+.wrap {
+  width: 1200px;
+  max-width: none;
+  min-width: 1200px;
+  padding: 20px;
+}
+
+main {
+  margin-top: 24px;
+}
+
+.gallery-grid {
+  grid-template-columns: repeat(auto-fill, minmax(220px, 1fr));
+}
+
+.gallery-modal {
+  min-width: 1240px;
+}
+
+.gallery-modal-dialog {
+  width: 1180px;
+  max-width: none;
+  grid-template-columns: minmax(0, 1.7fr) minmax(280px, 0.9fr);
+}

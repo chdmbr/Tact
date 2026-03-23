@@ -176,6 +176,20 @@ Shared navigation and routing were updated so the new pages behave like the exis
   - Claims updated clients immediately so gallery/calendar modal fixes do not depend on a hard refresh
   - Leaves static media on normal cache-backed behavior
 
+## Desktop-only presentation
+
+- Public pages are intentionally locked to a desktop layout
+- Small screens keep the desktop grid, spacing, typography, and header/footer behavior instead of switching to stacked mobile layouts
+- The current desktop-only lock is applied through:
+  - [assets/css/public-site.css](/home/chi/Tact/assets/css/public-site.css)
+  - [shared-ribbon.css](/home/chi/Tact/shared-ribbon.css)
+  - [assets/css/events.css](/home/chi/Tact/assets/css/events.css)
+  - [assets/css/gallery.css](/home/chi/Tact/assets/css/gallery.css)
+  - [assets/css/calendar.css](/home/chi/Tact/assets/css/calendar.css)
+  - [assets/css/program-page.css](/home/chi/Tact/assets/css/program-page.css)
+  - [index.html](/home/chi/Tact/index.html)
+  - [donate.html](/home/chi/Tact/donate.html)
+
 ## Landing page loading
 
 - [index.html](/home/chi/Tact/index.html), [assets/js/index-page.js](/home/chi/Tact/assets/js/index-page.js), and [assets/js/home-events-board.js](/home/chi/Tact/assets/js/home-events-board.js) are tuned for better first paint.

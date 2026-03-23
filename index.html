@@ -934,6 +934,80 @@
         }
 
       }
+
+      /* Desktop-only layout lock */
+      html,
+      body {
+        min-width: 1240px;
+      }
+
+      body {
+        overflow-x: auto;
+      }
+
+      .wrap {
+        width: 1200px;
+        max-width: none;
+        min-width: 1200px;
+        padding: 20px;
+      }
+
+      h1 {
+        font-size: 34px;
+      }
+
+      .arrival {
+        grid-template-columns: minmax(260px, 3.2fr) minmax(0, 2.3fr);
+      }
+
+      .home-events-layout {
+        grid-template-columns: 1.2fr 1fr;
+      }
+
+      .outreach-grid {
+        grid-template-columns: repeat(2, minmax(0, 1fr));
+      }
+
+      .photo-grid {
+        grid-template-columns: repeat(3, minmax(0, 1fr));
+      }
+
+      .flipping-images {
+        grid-template-columns: repeat(3, 1fr);
+        gap: 16px;
+      }
+
+      .surface {
+        padding: 20px 20px 18px;
+      }
+
+      .hero-visual {
+        min-height: 320px;
+      }
+
+      .home-vertical-window,
+      .home-upcoming-card {
+        height: auto;
+      }
+
+      .home-upcoming-card {
+        grid-template-columns: minmax(106px, 36%) minmax(0, 1fr);
+      }
+
+      .home-events-item,
+      .home-events-item--past {
+        grid-template-columns: 70px minmax(0, 1fr);
+      }
+
+      .home-events-item img,
+      .home-events-item--past img {
+        width: 70px;
+        height: 94px;
+      }
+
+      .flip-box {
+        height: 240px;
+      }
     </style>
     <!-- Include shared ribbon CSS -->
     <link rel="stylesheet" href="shared-ribbon.css">
