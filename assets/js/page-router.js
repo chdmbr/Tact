@@ -14,14 +14,14 @@
       "assets/js/events-page.js"
     ],
     "gallery.html": [
-      "assets/js/events-config.js",
-      "assets/js/gallery-data.js",
-      "assets/js/gallery-page.js"
+      "assets/js/events-config.js?v=20260323b",
+      "assets/js/gallery-data.js?v=20260323b",
+      "assets/js/gallery-page.js?v=20260323b"
     ],
     "calendar.html": [
-      "assets/js/events-config.js",
-      "assets/js/gallery-data.js",
-      "assets/js/calendar-page.js"
+      "assets/js/events-config.js?v=20260323b",
+      "assets/js/gallery-data.js?v=20260323b",
+      "assets/js/calendar-page.js?v=20260323b"
     ],
     "donate.html": [],
     "vijnana-harate.html": [
@@ -316,10 +316,10 @@
       return !loadedScripts["assets/js/events-page.js"];
     }
     if (routeKey === "gallery.html") {
-      return !loadedScripts["assets/js/gallery-page.js"];
+      return !loadedScripts["assets/js/gallery-page.js?v=20260323b"];
     }
     if (routeKey === "calendar.html") {
-      return !loadedScripts["assets/js/calendar-page.js"];
+      return !loadedScripts["assets/js/calendar-page.js?v=20260323b"];
     }
     if (routeKey === "vijnana-harate.html" ||
         routeKey === "vijnana-aranya.html" ||

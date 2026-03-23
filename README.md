@@ -166,6 +166,7 @@ Shared navigation and routing were updated so the new pages behave like the exis
   - Registers `gallery.html` and `calendar.html`
   - Loads the right scripts for those routes
   - Runs the correct page initializer on route changes
+  - Uses versioned gallery/calendar asset URLs so new modal logic is not blocked by stale browser cache
 
 ## Landing page loading
 
