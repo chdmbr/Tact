@@ -181,6 +181,7 @@ Shared navigation and routing were updated so the new pages behave like the exis
 - Public pages are intentionally locked to a desktop layout
 - Small screens keep the desktop grid, spacing, typography, and header/footer behavior instead of switching to stacked mobile layouts
 - Mobile `max-width` breakpoint rules have been removed from the public page styling layer rather than only being overridden later
+- Public HTML pages use a fixed `width=1240` viewport so mobile browsers scale the desktop layout down on first load instead of opening zoomed in
 - The current desktop-only lock is applied through:
   - [assets/css/public-site.css](/home/chi/Tact/assets/css/public-site.css)
   - [shared-ribbon.css](/home/chi/Tact/shared-ribbon.css)
