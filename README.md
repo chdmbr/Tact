@@ -47,7 +47,11 @@ The same admin page now includes a second mode: `Add Gallery`.
   - Remove button per block
 - At least one image is required
 - Every image requires a description
-- Large raster images are compressed in the browser before upload to reduce GitHub/API transfer failures
+- Raster images are automatically compressed in the browser before upload across event and gallery flows
+- Compression is multi-step and balanced:
+  - resizes large images progressively
+  - lowers quality only as much as needed
+  - aims to avoid GitHub/API upload failures while keeping acceptable clarity
 
 Gallery submissions use this structure:
 

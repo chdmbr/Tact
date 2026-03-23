@@ -671,8 +671,9 @@
       }
 
       const prepared = await prepareUploadFile(file, {
-        maxDimension: 1800,
-        quality: 0.82,
+        maxDimension: 1900,
+        quality: 0.86,
+        minQuality: 0.72,
         maxBytes: 900 * 1024
       });
       posterPayload = prepared.payload;
@@ -914,8 +915,9 @@
         }
 
         const prepared = await prepareUploadFile(file, {
-          maxDimension: 1600,
-          quality: 0.8,
+          maxDimension: 1700,
+          quality: 0.84,
+          minQuality: 0.7,
           maxBytes: 700 * 1024
         });
         block._payload = prepared.payload;
@@ -1024,13 +1026,14 @@
 
     async function prepareUploadFile(file, options) {
       const settings = options || {};
+      const isRaster = isCompressibleRasterImage(file);
       const originalPayload = {
         name: file.name,
         mime: file.type || "application/octet-stream",
         data: await readFileAsBase64(file)
       };
 
-      if (!shouldCompressImage(file, settings.maxBytes || 0)) {
+      if (!isRaster) {
         return { payload: originalPayload, compressed: false };
       }
 
@@ -1054,18 +1057,62 @@
       }
     }
 
-    function shouldCompressImage(file, maxBytes) {
+    function isCompressibleRasterImage(file) {
       const mime = String((file && file.type) || "").toLowerCase();
-      if (!/^image\/(jpeg|jpg|png|webp)$/i.test(mime)) return false;
-      if (!maxBytes) return true;
-      return Number(file.size || 0) > maxBytes;
+      return /^image\/(jpeg|jpg|png|webp)$/i.test(mime);
     }
 
-    function compressImageFile(file, options) {
+    async function compressImageFile(file, options) {
       const settings = options || {};
-      const maxDimension = Number(settings.maxDimension || 1600);
-      const quality = Number(settings.quality || 0.82);
+      const maxDimension = Number(settings.maxDimension || 1700);
+      const targetBytes = Number(settings.maxBytes || 800 * 1024);
+      const startQuality = Number(settings.quality || 0.84);
+      const minQuality = Number(settings.minQuality || 0.7);
+      const outputMime = "image/jpeg";
+      const source = await loadImageFile(file);
+      try {
+        let width = source.width;
+        let height = source.height;
+        let quality = startQuality;
+        let best = null;
 
+        for (let attempt = 0; attempt < 7; attempt += 1) {
+          const scale = Math.min(1, maxDimension / Math.max(width, height));
+          const nextWidth = Math.max(1, Math.round(width * scale));
+          const nextHeight = Math.max(1, Math.round(height * scale));
+          const result = await renderCompressedImage(source.image, nextWidth, nextHeight, outputMime, quality);
+
+          if (!best || result.size < best.size) {
+            best = result;
+          }
+          if (result.size <= targetBytes) {
+            break;
+          }
+
+          if (quality > minQuality) {
+            quality = Math.max(minQuality, quality - 0.06);
+          } else {
+            width = Math.max(960, Math.round(nextWidth * 0.88));
+            height = Math.max(960, Math.round(nextHeight * 0.88));
+          }
+        }
+
+        if (!best) {
+          throw new Error("Compression failed.");
+        }
+
+        return {
+          mime: outputMime,
+          extension: ".jpg",
+          base64: best.base64,
+          size: best.size
+        };
+      } finally {
+        URL.revokeObjectURL(source.objectUrl);
+      }
+    }
+
+    function loadImageFile(file) {
       return new Promise((resolve, reject) => {
         const objectUrl = URL.createObjectURL(file);
         const image = new Image();
@@ -1073,38 +1120,7 @@
         image.onload = function () {
           const width = image.naturalWidth || image.width;
           const height = image.naturalHeight || image.height;
-          const scale = Math.min(1, maxDimension / Math.max(width, height));
-          const nextWidth = Math.max(1, Math.round(width * scale));
-          const nextHeight = Math.max(1, Math.round(height * scale));
-          const canvas = document.createElement("canvas");
-          const context = canvas.getContext("2d");
-
-          canvas.width = nextWidth;
-          canvas.height = nextHeight;
-          context.drawImage(image, 0, 0, nextWidth, nextHeight);
-
-          const outputMime = "image/jpeg";
-          canvas.toBlob(function (blob) {
-            URL.revokeObjectURL(objectUrl);
-            if (!blob) {
-              reject(new Error("Compression failed."));
-              return;
-            }
-
-            const reader = new FileReader();
-            reader.onload = function () {
-              const value = String(reader.result || "");
-              const commaIndex = value.indexOf(",");
-              resolve({
-                mime: outputMime,
-                extension: ".jpg",
-                base64: commaIndex >= 0 ? value.slice(commaIndex + 1) : value,
-                size: blob.size
-              });
-            };
-            reader.onerror = reject;
-            reader.readAsDataURL(blob);
-          }, outputMime, quality);
+          resolve({ image: image, width: width, height: height, objectUrl: objectUrl });
         };
 
         image.onerror = function () {
@@ -1113,6 +1129,44 @@
         };
 
         image.src = objectUrl;
+      });
+    }
+
+    function renderCompressedImage(image, width, height, mime, quality) {
+      return new Promise((resolve, reject) => {
+        const canvas = document.createElement("canvas");
+        const context = canvas.getContext("2d");
+        if (!context) {
+          reject(new Error("Canvas is not available."));
+          return;
+        }
+
+        canvas.width = width;
+        canvas.height = height;
+        context.fillStyle = "#ffffff";
+        context.fillRect(0, 0, width, height);
+        context.imageSmoothingEnabled = true;
+        context.imageSmoothingQuality = "high";
+        context.drawImage(image, 0, 0, width, height);
+
+        canvas.toBlob(function (blob) {
+          if (!blob) {
+            reject(new Error("Compression failed."));
+            return;
+          }
+
+          const reader = new FileReader();
+          reader.onload = function () {
+            const value = String(reader.result || "");
+            const commaIndex = value.indexOf(",");
+            resolve({
+              base64: commaIndex >= 0 ? value.slice(commaIndex + 1) : value,
+              size: blob.size
+            });
+          };
+          reader.onerror = reject;
+          reader.readAsDataURL(blob);
+        }, mime, quality);
       });
     }
 
@@ -1128,7 +1182,7 @@
       }
 
       const nextSize = Math.round(Number(prepared.size || 0) / 1024);
-      return "Selected: " + originalFile.name + " (" + originalSize + " KB) -> optimized upload (" + nextSize + " KB)";
+      return "Selected: " + originalFile.name + " (" + originalSize + " KB) -> balanced upload (" + nextSize + " KB)";
     }
 
     function hasConfiguredEndpoint() {
