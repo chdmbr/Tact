@@ -62,6 +62,18 @@ window.TACT_EVENT_FEED = [
     "homepageMatter": "nithish"
   },
   {
+    "slug": "2026-03-29-hi-hihihihihhi",
+    "title": "hi hihihihihhi",
+    "date": "2026-03-29",
+    "time": "6:00 AM - 6:30 AM",
+    "location": "hyd",
+    "status": "scheduled",
+    "folder": "content/events/2026-03-29-hi-hihihihihhi",
+    "poster": "content/events/2026-03-29-hi-hihihihihhi/poster.jpg",
+    "teaser": "",
+    "homepageMatter": "Use the same PIN-protected panel to publish events or add gallery collections without manual code edits.\nUse the same PIN-protected panel to publish events or add gallery collections without manual code edits.Use the same PIN-protected panel to publish events or add gallery collections without manual code edits."
+  },
+  {
     "slug": "2026-yuvati-mentorship-day",
     "title": "Vijnana Yuvati Mentorship Day",
     "date": "2026-04-10",
